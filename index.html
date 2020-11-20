@@ -126,7 +126,7 @@ scalar using_URL
 
 The URL of a specification.
 
-Specification URLs **must** be valid [RFC1738 URLs](https://tools.ietf.org/html/rfc1738). They **should** provide the content of the appropriate version of the specification in some human-readable form. It is not required that the content be machine-readable in any particular way.
+Specification URLs **must** be valid [RFC 3986 URLs](https://tools.ietf.org/html/rfc3986). They **should** provide the content of the appropriate version of the specification in some human-readable form. It is not required that the content be machine-readable in any particular way.
 
 The final component of the URL's `"/"`-separated `path` **must** be a valid [SemVer specifier](#semver-specifiers) identifying the version of the spec in use. Everything prior to the version specifier is the spec's *base URL*. Processors **should** treat the spec's base URL as an opaque string identifying the specification.
 
@@ -199,5 +199,3 @@ The version is in the URL because when a human reader visits the URL, we would l
 
 </main>
 </div>
-
-<script async defer src=./root.js></script>
