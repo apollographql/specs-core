@@ -152,14 +152,14 @@ Specifications **should** provide a semantic version number.
 
 ### SemVer Specifiers
 
-The final `/`-separated path component **must** be a semver specifier. Semver specifiers take the form *major*.*minor*.*patch*-*prerelease*. The minor, patch, and pre-release specifiers are all optional. Examples:
+The final `/`-separated path component **must** be a semver specifier. Semver specifiers take the form `v*major*.*minor*.*patch*-*prerelease*`. The minor, patch, and pre-release specifiers are all optional. Examples:
 
 ```
 #::[Valid SemVer specifiers]
-1
-1.2
-1.2.3-alpha
-2.2.3-alpha.2
+v1
+v1.2
+v1.2.3-alpha
+v2.2.3-alpha.2
 ```
 
 ### SemVer selection
@@ -168,14 +168,14 @@ Processors **should** select the highest available spec implementation which is 
 
 ```graphql
 #::[`@using` version 2.x.y]
-schema @using(spec: "https://specs.example.com/exampleSpec/2")
+schema @using(spec: "https://specs.example.com/exampleSpec/v2")
 ```
 
 Upon seeing this directive, processors which support the `https://specs.example.com/exampleSpec` spec **should** activate a version of their implementation which is compatible with major version 2.
 
 ```graphql
 #::[`@using` version 3.1.1-alpha]
-schema @using(spec: "https://specs.example.com/exampleSpec/3.1.1-alpha")
+schema @using(spec: "https://specs.example.com/exampleSpec/v3.1.1-alpha")
 ```
 
 This selects versions in the `3.1.1-alpha` prerelease series. For example, a processor may satisfy this requirement by activating version `3.1.1-alpha.2` of `exampleSpec`.
