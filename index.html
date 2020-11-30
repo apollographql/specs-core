@@ -65,7 +65,7 @@ The `@using` directive is applied to `schema` declarations to declare that the s
 
 ```graphql
 #::[Using the `@using` directive]
-schema @using(spec: "https://spec.example.com/exampleSpec/1") {
+schema @using(spec: "https://spec.example.com/exampleSpec/v1") {
   query: Query
 }
 ```
@@ -86,10 +86,10 @@ Specifications **may** include the following language to instruct schema authors
 `SPEC_NAME` and `SPEC_URL` should be replaced with the names and URLs for the specification. For example:
 
 > Example Spec schema documents **must** have a `schema` declaration with a [`@using` directive](/specs/use)
-> and the specification URL `https://specs.example.com/exampleSpec/1`:
+> and the specification URL `https://specs.example.com/exampleSpec/v1`:
 >
 > ```graphql
-> schema @using(spec: "https://specs.example.com/exampleSpec/1") {
+> schema @using(spec: "https://specs.example.com/exampleSpec/v1") {
 >   query: Query
 > }
 > ```
@@ -135,12 +135,12 @@ This spec assigns no meaning to additional URL components, such as the query str
 ```graphql
 #::[`@using` directive with a query string]
 schema
-  @using(spec: "https://spec.example.com/exampleSpec/1?unrelated=value")
+  @using(spec: "https://spec.example.com/exampleSpec/v1?unrelated=value")
   { ... }
 ```
 
 This directive:
-- Declares that the document conforms to a spec which can be found at `https://spec.example.com/exampleSpec/1`
+- Declares that the document conforms to a spec which can be found at `https://spec.example.com/exampleSpec/v1`
 - Has a base URL of `https://spec.example.com/exampleSpec`
 - Has a [semver specifier](#semver-specifier) of `1`
 - Has a query string of `"unrelated=value":
