@@ -48,27 +48,95 @@ graph TB
 ```
 
 - **Authors (either human or machine)** write one or more `@using` directives into schema files to declare that the schema conforms to some set of specifications
-- **Machine processors** read the `@using` directives and compare them to a list of supported schema specs, activating the spec-mandated appropriate behaviors
+- **Machine processors** read the `@using` directives and compare them to a list of supported specs, activating the spec-mandated appropriate behaviors. Processors generally *pass through* schema elements they do not understand, although they may remove them or fail entirely, depending on the processor's needs and the spec's [listed purpose](#for).
 - **Human readers** see the `@using` directives and can follow the URLs to the specification, receiving an explanation of the requirements of the specification and what new directives, types, and other schema objects are available within the document.
+
 
 ## The `@using` directive
 
-### `@using` within a document
-
 ```graphql
 #::[Declaration of the `@using` directive]
-directive @using(spec: using_URL!)
+directive @using(spec: String!, prefix: String, for: [String])
   repeatable on SCHEMA
 ```
+
+### `@using` within a document
 
 The `@using` directive is applied to `schema` declarations to declare that the schema uses a particular spec. For example,
 
 ```graphql
 #::[Using the `@using` directive]
-schema @using(spec: "https://spec.example.com/exampleSpec/v1") {
+schema @using(spec: "https://spec.example.com/example/v1") {
   query: Query
 }
 ```
+
+### `spec`
+
+Provide the specification URL as a string.
+
+The `spec` argument **should** be the URL of a specification. When viewed, the URL **should** provide the content of the appropriate version of the specification in some human-readable form. In short, a human reader should be able to click the link and go to the docs. It is not required that the content be machine-readable in any particular way.
+
+Processors **must** degrade gracefully. Specifically, if the `spec` argument is not a [valid RFC 3986 URL](https://tools.ietf.org/html/rfc3986), processors **must** treat it as an opaque, non-versioned identifier referencing a particular specification.
+
+The final component of the URL's `"/"`-separated `path` **must** be a valid [SemVer specifier](#semver-specifiers) identifying the version of the spec in use. Everything prior to the version specifier is the spec's *base URL*.
+
+Specifications **should** prefix any schema elements they introduce. The final component of the *base URL*'s `"/"`-separated `path` **should** be the default prefix under which new schema elements will be introduced. For example:
+
+```graphql
+#::[Using the `@using` directive with a default prefix]
+#                    |---------- 👇🏽 base url --------|👇🏽 version
+schema @using(spec: "https://spec.example.com/example/v1") {
+#                                        prefix ☝🏾
+  query: Query
+}
+
+type User {
+               # prefixed directive from the example spec
+  name: String @example_someDirective
+}
+```
+
+Processors **should** otherwise treat the spec's base URL as an opaque string identifying the specification.
+
+This spec assigns no meaning to additional URL components, such as the query string or fragment. Processors **should** ignore any meaningless URL components when parsing the base URL and semver specifier.
+
+### `prefix`
+
+Change the prefix for schema elements from this specification.
+
+```graphql
+#::[Using the `@using` directive with a custom prefix]
+schema @using(spec: "https://spec.example.com/example/v1", prefix: "eg") {
+  query: Query
+}
+
+type User {
+  name: String @eg_someDirective
+}
+```
+
+### `for`
+
+Describe the purpose of a spec within a document.
+
+```graphql
+schema @using(spec: "https://example.com/spec/policy/v1",
+               for: ["resolution", "security"]) {
+  ...
+}
+```
+
+Documents reference specifications for a variety of purposes: to provide documentation, security policies, routing configuration, and so on. This argument describes *why* a spec is being imported. Consumers **may** choose to reject schemas which use unknown specs `for` important purposes. For example, a graph router may decide to fail if presented with a schema that uses an unknown spec `for: ["security"]`.
+
+If specified, `for` must be a list of `String`s. Each item must be either:
+
+1. One of these well-known values:
+  - `security` — metadata necessary to use the document securely
+  - `resolution` — metadata necessary to resolve fields
+  - `documentation` — documentation, such as `@todo` and `@deprecated`
+  - `observation` - annotations for tracing and analytics
+2. A custom value with a `_`-separated prefix. E.g. `vendor_serviceDiscovery`, `devMode_editing`
 
 ### Requiring `@using` within a spec
 
@@ -86,10 +154,10 @@ Specifications **may** include the following language to instruct schema authors
 `SPEC_NAME` and `SPEC_URL` should be replaced with the names and URLs for the specification. For example:
 
 > Example Spec schema documents **must** have a `schema` declaration with a [`@using` directive](/specs/use)
-> and the specification URL `https://specs.example.com/exampleSpec/v1`:
+> and the specification URL `https://specs.example.com/example/v1`:
 >
 > ```graphql
-> schema @using(spec: "https://specs.example.com/exampleSpec/v1") {
+> schema @using(spec: "https://specs.example.com/example/v1") {
 >   query: Query
 > }
 > ```
@@ -116,35 +184,20 @@ Specifically, processors:
 
 An exception to this is processors which prepare the schema for final public consumption. Such processors **may** choose to eliminate all unknown directives and prefixed types in order to hide schema implementation details within the published schema. This will impair the operation of tooling which relies on these directives—such tools will not be able to run on the output schema, so the benefits and costs of this kind of information hiding should be weighed carefully on a case-by-case basis.
 
-## Spec URLs
-
-```graphql
-#::[Declaration of using_URL scalar]
-scalar using_URL
-  @specifiedBy(url: "https://apollographql.com/docs/specs/using#spec-urls")
-```
-
-The URL of a specification.
-
-Specification URLs **must** be valid [RFC 3986 URLs](https://tools.ietf.org/html/rfc3986). They **should** provide the content of the appropriate version of the specification in some human-readable form. It is not required that the content be machine-readable in any particular way.
-
-The final component of the URL's `"/"`-separated `path` **must** be a valid [SemVer specifier](#semver-specifiers) identifying the version of the spec in use. Everything prior to the version specifier is the spec's *base URL*. Processors **should** treat the spec's base URL as an opaque string identifying the specification.
-
-This spec assigns no meaning to additional URL components, such as the query string or fragment. Processors **should** ignore any meaningless URL components when parsing the base URL and semver specifier.
 
 ```graphql
 #::[`@using` directive with a query string]
 schema
-  @using(spec: "https://spec.example.com/exampleSpec/v1?unrelated=value")
+  @using(spec: "https://spec.example.com/example/v1?unrelated=value")
   { ... }
 ```
 
 This directive:
-- Declares that the document conforms to a spec which can be found at `https://spec.example.com/exampleSpec/v1`
-- Has a base URL of `https://spec.example.com/exampleSpec`
-- Has a [semver specifier](#semver-specifier) of `1`
+- Declares that the document conforms to a spec which can be found at `https://spec.example.com/example/v1`
+- Has a base URL of `https://spec.example.com/example`, identifying the specification
+- Has a [semver specifier](#semver-specifier) of `v1` identifying the spec version
 - Has a query string of `"unrelated=value":
-  - This has no effect unless `exampleSpec` assigns it specific meaning.
+  - This has no effect unless `example` assigns it specific meaning.
 
 ## Semantic Versioning
 
@@ -168,17 +221,17 @@ Processors **should** select the highest available spec implementation which is 
 
 ```graphql
 #::[`@using` version 2.x.y]
-schema @using(spec: "https://specs.example.com/exampleSpec/v2")
+schema @using(spec: "https://specs.example.com/example/v2")
 ```
 
-Upon seeing this directive, processors which support the `https://specs.example.com/exampleSpec` spec **should** activate a version of their implementation which is compatible with major version 2.
+Upon seeing this directive, processors which support the `https://specs.example.com/example` spec **should** activate a version of their implementation which is compatible with major version 2.
 
 ```graphql
 #::[`@using` version 3.1.1-alpha]
-schema @using(spec: "https://specs.example.com/exampleSpec/v3.1.1-alpha")
+schema @using(spec: "https://specs.example.com/example/v3.1.1-alpha")
 ```
 
-This selects versions in the `3.1.1-alpha` prerelease series. For example, a processor may satisfy this requirement by activating version `3.1.1-alpha.2` of `exampleSpec`.
+This selects versions in the `3.1.1-alpha` prerelease series. For example, a processor may satisfy this requirement by activating version `3.1.1-alpha.2` of `example`.
 
 ### Why is versioning in the URL, not a directive argument?
 
