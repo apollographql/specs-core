@@ -122,7 +122,7 @@ Describe the purpose of a spec within a document.
 
 ```graphql
 schema @using(spec: "https://example.com/spec/policy/v1",
-               for: ["resolution", "security"]) {
+               for: ["execution", "security"]) {
   ...
 }
 ```
@@ -132,17 +132,18 @@ Documents reference specifications for a variety of purposes: to provide documen
 If specified, `for` must be a list of `String`s. Each item must be either:
 
 1. One of these well-known values:
-  - `security` — metadata necessary to use the document securely
-  - `resolution` — metadata necessary to resolve fields
-  - `documentation` — documentation, such as `@todo` and `@deprecated`
+  - `security` — metadata necessary to use the document securely. Processors which are responsible for executing operations **should** fail if asked to process a document which uses an unknown spec `for` `"security"`.
+  - `execution` — metadata necessary to resolve fields. Processors which are responsible for executing operations **should** fail if asked to process a document which uses an unknown spec `for` `"execution"`.
+  - `performance` — metadata to improve performance: optimization hints, pre-computed plans, etc.
   - `observation` - annotations for tracing and analytics
+  - `documentation` — documentation, such as `@todo` and `@deprecated`
 2. A custom value with a `_`-separated prefix. E.g. `vendor_serviceDiscovery`, `devMode_editing`
 
 ### Requiring `@using` within a spec
 
 Specifications **may** include the following language to instruct schema authors to use `@using` to indicate documents which are intended to conform to the specification:
 
-> SPEC_NAME schema documents **must**/**should**/**may** have a `schema` declaration with a [`@using` directive](/specs/use)
+> SPEC_NAME schema documents **must**/**should**/**may** have a `schema` declaration with a [`@using` directive](/using/drafts/pre-0)
 > and the specification URL `SPEC_URL`:
 >
 > ```graphql
@@ -153,7 +154,7 @@ Specifications **may** include the following language to instruct schema authors
 
 `SPEC_NAME` and `SPEC_URL` should be replaced with the names and URLs for the specification. For example:
 
-> Example Spec schema documents **must** have a `schema` declaration with a [`@using` directive](/specs/use)
+> Example Spec schema documents **must** have a `schema` declaration with a [`@using` directive](/using/drafts/pre-0)
 > and the specification URL `https://specs.example.com/example/v1`:
 >
 > ```graphql
