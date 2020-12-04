@@ -51,55 +51,46 @@ graph TB
 - **Machine processors** read the `@using` directives and compare them to a list of supported specs, activating the spec-mandated appropriate behaviors. Processors generally *pass through* schema elements they do not understand, although they may remove them or fail entirely, depending on the processor's needs and the spec's [listed purpose](#for).
 - **Human readers** see the `@using` directives and can follow the URLs to the specification, receiving an explanation of the requirements of the specification and what new directives, types, and other schema objects are available within the document.
 
-
-## The `@using` directive
-
-```graphql
-#::[Declaration of the `@using` directive]
-directive @using(spec: String!, prefix: String, for: [String])
-  repeatable on SCHEMA
-```
-
-### `@using` within a document
+## `@using` within a document
 
 The `@using` directive is applied to `schema` declarations to declare that the schema uses a particular spec. For example,
 
 ```graphql
 #::[Using the `@using` directive]
-schema @using(spec: "https://spec.example.com/example/v1") {
+schema @using(spec: "https://spec.example.com/example/v1.0") {
   query: Query
 }
 ```
+
+## The `@using` directive
+
+```graphql
+#::[Declaration of the `@using` directive]
+directive @using(spec: String!, prefix: String)
+  repeatable on SCHEMA
+```
+
+Documents **must** include a definition for the `@using` directive. The provided definition does not have to match the above definition exactly. Instead, it must be *compatible*. A conforming definition may:
+- **Omit optional arguments** if they are never used in the document.
+- **Introduce new directive locations**, the behavior of which is unspecified here.
+- **Introduce new arguments.** New arguments **should** be prefixed, e.g. `example_feature: Bool`. The prefix **should** be the prefix of a spec referenced with this or another `@using` directive within the document.
 
 ### `spec`
 
-Provide the specification URL as a string.
+A URL identifying the spec. When viewed, the URL **should** provide the content of the appropriate version of the specification in some human-readable form. In short, a human reader should be able to click the link and go to the docs for the version in use. It is not required that the *content* be machine-readable in any particular way.
 
-The `spec` argument **should** be the URL of a specification. When viewed, the URL **should** provide the content of the appropriate version of the specification in some human-readable form. In short, a human reader should be able to click the link and go to the docs. It is not required that the content be machine-readable in any particular way.
+<figure>
+  <figcaption>
+    <a name=anatomy-of-a-spec-url href=#anatomy-of-a-spec-url class=a-header>Basic anatomy of a spec URL</a>
+  </figcaption>  
+  <code class=anatomy>
+    <span class=pink style='--depth: 2'>http://spec.example.com/a/b/c/<span>exampleSpec<aside>prefix</aside></span><aside>
+      identity
+    </aside></span>/<span style='--depth: 2' class=green>v1<aside>version</aside></span>
+  </code>
+</figure>
 
-Processors **must** degrade gracefully. Specifically, if the `spec` argument is not a [valid RFC 3986 URL](https://tools.ietf.org/html/rfc3986), processors **must** treat it as an opaque, non-versioned identifier referencing a particular specification.
-
-The final component of the URL's `"/"`-separated `path` **must** be a valid [SemVer specifier](#semver-specifiers) identifying the version of the spec in use. Everything prior to the version specifier is the spec's *base URL*.
-
-Specifications **should** prefix any schema elements they introduce. The final component of the *base URL*'s `"/"`-separated `path` **should** be the default prefix under which new schema elements will be introduced. For example:
-
-```graphql
-#::[Using the `@using` directive with a default prefix]
-#                    |---------- 👇🏽 base url --------|👇🏽 version
-schema @using(spec: "https://spec.example.com/example/v1") {
-#                                        prefix ☝🏾
-  query: Query
-}
-
-type User {
-               # prefixed directive from the example spec
-  name: String @example_someDirective
-}
-```
-
-Processors **should** otherwise treat the spec's base URL as an opaque string identifying the specification.
-
-This spec assigns no meaning to additional URL components, such as the query string or fragment. Processors **should** ignore any meaningless URL components when parsing the base URL and semver specifier.
+Spec URLs contain information about the spec's [prefix](#prefixing) and [version](#versioning), and should be generated and processed in accordance with the [requirements on the structure of spec URLs](#spec-urls).
 
 ### `prefix`
 
@@ -116,30 +107,87 @@ type User {
 }
 ```
 
-### `for`
+This argument has no effect on specs which do not introduce prefixed schema elements.
 
-Describe the purpose of a spec within a document.
+## Spec URLs
+
+Spec URLs serve two main purposes:
+  - Directing human readers to documentation about the specification(s) in use.
+  - Providing tools with information about the specs in use, along with enough information to select and invoke an implementation
+  
+Spec URLs **should** be [RFC 3986 URLs](https://tools.ietf.org/html/rfc3986). When viewed, the URL **should** provide the content of the selected version of the specification in some human-readable form; a human reader should be able to click the link and go to the correct version of the docs.
+
+Although they are not prohibited from doing so, it's assumed that processors will not load the content of spec URLs. Published specifications are not required to be machine-readable, and [this spec](.) places no requirements on the structure or syntax of the content to be found there.
+
+There are, however, requirements on the structure of the URL itself:
+
+<figure>
+  <figcaption>
+    <a name=basic-anatomy-of-a-spec-url href=#basic-anatomy-of-a-spec-url class=a-header>Basic anatomy of a spec URL</a>
+  </figcaption>  
+  <code class=anatomy>
+    <span class=pink style='--depth: 2'>https://spec.example.com/a/b/c/<span>exampleSpec<aside>prefix</aside></span><aside>
+      identity
+    </aside></span>/<span style='--depth: 2' class=green>v1.0<aside>version</aside></span>
+  </code>
+</figure>
+
+The final two segments of the URL's [path](https://tools.ietf.org/html/rfc3986#section-3.3) **should** contain the spec's [default prefix](#prefix) and a [version specifier](#semver-specifier). The content of the URL up to and including the prefix—but excluding the version specifier and trailing `/`—is the spec's *identity*. For the above example,
+<dl>
+  <dt markdown>`identity: "https://spec.example.com/a/b/c/exampleSpec"`</dt>
+  <dd>A global identifier for the spec. Processors can treat this as an opaque string identifying the spec (but not the version of the spec) for purposes of selecting an appropriate implementation.</dd>
+  <dt markdown>`prefix: "exampleSpec"`</dt>
+  <dd markdown>The spec's default prefix for purposes of [prefixing](#prefixing) schema elements it defines or extends. URLs for specs which do not employ prefixing will still be interpreted as specifying a default prefix; the default prefix will simply have no effect on implementation behavior.</dd>
+  <dt markdown>`version: "v1.0"`</dt>
+  <dd markdown>The [version](#versioning) of the spec against which the document was authored. Processors **must** select an implementation of the spec which is [compatible](#compatibility) with the specified version.</dd>
+</dl>
+
+### Ignore meaningless URL components
+
+When extracting the URL's `prefix` and `version`, processors **must** ignore any url components which are not assigned a meaning. This spec assigns meaning to the final two components of the [path](https://tools.ietf.org/html/rfc3986#section-3.3). Other URL components—particularly query strings and fragments, if present—**must** be ignored for the purposes of extracting the `prefix` and `version`.
+
+<figure>
+  <figcaption>
+    <a name=spec-url-ignore-meaningless href=#spec-url-ignore-meaningless class=a-header>Ignoring meaningless parts of a URL</a>
+  </figcaption>  
+  <code class=anatomy>
+    <span class=pink style='--depth: 2'>https://example.com/<span>exampleSpec<aside>prefix</aside></span><aside>
+      identity
+    </aside></span>/<span style='--depth: 2' class=green>v1.0<aside>version</aside></span><span class=grey>?key=val&k2=v2#fragment<aside>ignored</aside></span>
+  </code>
+</figure>
+
+## Prefixing
+Specifications intending to be referenced via `@using` **should** prefix any schema elements they introduce. The prefix **must** be a string of characters valid within GraphQL typenames, with the exception of `"_"`.
+
+Specs **should** define any new schema elements with names that start with `prefix_`.
 
 ```graphql
-schema @using(spec: "https://example.com/spec/policy/v1",
-               for: ["execution", "security"]) {
-  ...
+#::[Using the `@using` directive with a default prefix]
+schema @using(spec: "https://spec.example.com/example/v1") {
+  query: Query
+}
+
+type User {
+  name: String @example_someDirective
+               # prefixed directive from the example spec
 }
 ```
 
-Documents reference specifications for a variety of purposes: to provide documentation, security policies, routing configuration, and so on. This argument describes *why* a spec is being imported. Consumers **may** choose to reject schemas which use unknown specs `for` important purposes. For example, a graph router may decide to fail if presented with a schema that uses an unknown spec `for: ["security"]`.
+The language of the spec **should** specify the default prefix and **should** identify locations where the prefix is used. The prefix **should not** be elided within documentation; definitions of schema elements provided within the spec **must** include the default prefix.
 
-If specified, `for` must be a list of `String`s. Each item must be either:
+### Types
 
-1. One of these well-known values:
-  - `security` — metadata necessary to use the document securely. Processors which are responsible for executing operations **should** fail if asked to process a document which uses an unknown spec `for` `"security"`.
-  - `execution` — metadata necessary to resolve fields. Processors which are responsible for executing operations **should** fail if asked to process a document which uses an unknown spec `for` `"execution"`.
-  - `performance` — metadata to improve performance: optimization hints, pre-computed plans, etc.
-  - `observation` - annotations for tracing and analytics
-  - `documentation` — documentation, such as `@todo` and `@deprecated`
-2. A custom value with a `_`-separated prefix. E.g. `vendor_serviceDiscovery`, `devMode_editing`
+Specs which introduce new types **should** attach a prefix to those types.
 
-### Requiring `@using` within a spec
+
+
+
+Processors **should** otherwise treat the spec's identity as an opaque string identifying the specification.
+
+This spec assigns no meaning to additional URL components, such as the query string or fragment. Processors **should** ignore any meaningless URL components when parsing the identity and semver specifier.
+
+## Requiring `@using` within a spec
 
 Specifications **may** include the following language to instruct schema authors to use `@using` to indicate documents which are intended to conform to the specification:
 
@@ -195,7 +243,7 @@ schema
 
 This directive:
 - Declares that the document conforms to a spec which can be found at `https://spec.example.com/example/v1`
-- Has a base URL of `https://spec.example.com/example`, identifying the specification
+- Has a identity of `https://spec.example.com/example`, identifying the specification
 - Has a [semver specifier](#semver-specifier) of `v1` identifying the spec version
 - Has a query string of `"unrelated=value":
   - This has no effect unless `example` assigns it specific meaning.
