@@ -1,0 +1,54 @@
+schema
+  @using(spec: "https://spec.example.com/specA/v1.0")
+  @using(spec: "https://spec.example.com/specB/v2.0", prefix: "B") {
+  query: Query
+}
+
+"""
+specA_SomeType is a type defined by spec A.
+"""
+type specA_SomeType {
+  """
+  nativeField is a field defined by specA on a type also defined
+  by specA (namely specA_SomeType)
+  """
+  nativeField: Int @specA_fieldDirective
+
+  """
+  B_foreignField is a field defined by specB on a type defined
+  by specA (namely specA_SomeType)
+  """
+  B_foreignField: Int
+}
+
+"""
+specA_SomeInput is an input defined by spec A.
+"""
+input specA_SomeInput {
+  """
+  nativeInputField is defined by specA
+  """
+  nativeInputField: Int
+
+  """
+  B_field is defined by specB as a field on specA_SomeInput
+  """
+  B_field: String
+}
+
+"""
+specA_Items is defined by spec A
+"""
+enum specA_Items { ONE, TWO, THREE @B }
+
+"""
+@B is the root directive defined by specB
+
+Root directives carry only the prefix of their spec.
+"""
+directive @B on ENUM_VALUE
+
+"""
+@specA_fieldDirective is a directive defined by specA
+"""
+directive @specA_fieldDirective on FIELD
