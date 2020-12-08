@@ -268,8 +268,8 @@ Given a version `requested` by a document and an `available` version of an imple
 ```typescript
 canSatisfy(requested: Version, available: Version) =
   requested.major == available.major &&
-  requested.major > 0 && (requested.minor <= available.minor)
-    || (requested.minor == available.minor)
+  (requested.major > 0 && (requested.minor <= available.minor)
+    || (requested.minor == available.minor))
 ```
 
 ### Referencing versions and activating implementations
