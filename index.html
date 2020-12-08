@@ -94,7 +94,7 @@ Spec URLs contain information about the spec's [prefix](#prefixing) and [version
 
 ### `prefix`
 
-Change the prefix for schema elements from this specification.
+Change the [prefix](#prefixing) for schema elements from this specification.
 
 ```graphql
 #::[Using the `@using` directive with a custom prefix]
@@ -106,6 +106,8 @@ type User {
   name: String @eg_someDirective
 }
 ```
+
+When a `prefix` is provided, processors **must** configure the resulting implementation to use the specified prefix for all [prefixed schema elements](#elements-which-should-be-prefixed).
 
 This argument has no effect on specs which do not introduce prefixed schema elements.
 
@@ -206,7 +208,8 @@ type User {
 
 The language of the spec **should** specify the default prefix and **should** identify locations where the prefix is used. The prefix **should not** be elided within documentation; definitions of schema elements provided within the spec **must** include the default prefix.
 
-Specs should attach their prefix to:
+### Elements which should be prefixed
+Specs **should** attach their prefix to:
 - the names of any object types, interfaces, unions, enums, or input object types defined in the spec
 - the names of any fields the spec introduces on *foreign types* defined in a different spec
 - the names of any arguments the spec introduces on *foreign types* defined in a different spec
@@ -317,13 +320,6 @@ Specifically, processors:
   - **should** pass through unknown directives, types, and other schema elements
 
 An exception to this is processors which prepare the schema for final public consumption. Such processors **may** choose to eliminate all unknown directives and prefixed types in order to hide schema implementation details within the published schema. This will impair the operation of tooling which relies on these directives—such tools will not be able to run on the output schema, so the benefits and costs of this kind of information hiding should be weighed carefully on a case-by-case basis.
-
-## Validations
-
-### All Prefixes Bound
-
-**Formal Specification**
-- For 
 
 </main>
 </div>
