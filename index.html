@@ -156,17 +156,17 @@ There are, however, requirements on the structure of the URL itself:
   </code>
 </figure>
 
-The final two segments of the URL's [path](https://tools.ietf.org/html/rfc3986#section-3.3) **should** contain the spec's [default prefix](#prefix) and a [version specifier](#semver-specifier). The content of the URL up to and including the prefix—but excluding the version specifier and trailing `/`—is the spec's *identity*. For the above example,
+The final two segments of the URL's [path](https://tools.ietf.org/html/rfc3986#section-3.3) **should** contain the spec's [default prefix](#prefix) and a [version tag](#versioning). The content of the URL up to and including the prefix—but excluding the version tag and trailing `/`—is the spec's *identity*. For the above example,
 <dl>
   <dt markdown>`identity: "https://spec.example.com/a/b/c/exampleSpec"`</dt>
   <dd>A global identifier for the spec. Processors can treat this as an opaque string identifying the spec (but not the version of the spec) for purposes of selecting an appropriate implementation.</dd>
   <dt markdown>`prefix: "exampleSpec"`</dt>
   <dd markdown>The spec's default prefix for purposes of [prefixing](#prefixing) schema elements it defines or extends. URLs for specs which do not employ prefixing will still be interpreted as specifying a default prefix; the default prefix will simply have no effect on implementation behavior.</dd>
   <dt markdown>`version: "v1.0"`</dt>
-  <dd markdown>The [version](#versioning) of the spec against which the document was authored. Processors **must** select an implementation of the spec which can [satisfy](#satisfaction) the specified version.</dd>
+  <dd markdown>The tag for the [version](#versioning) of the spec used to author the document. Processors **must** select an implementation of the spec which can [satisfy](#satisfaction) the specified version.</dd>
 </dl>
 
-The version specifier **must** satisfy the [BNF grammar for `‹version specifier›`](#grammar).
+The version tag **must** satisfy the [BNF grammar for `‹version tag›`](#backus-naur-form-for-versions-and-version-tags).
 
 ### Ignore meaningless URL components
 
@@ -274,17 +274,20 @@ Schema documents **must** reference a spec version which supports all the schema
 
 For every spec they support, processors **must** activate an implementation which can [satisfy](#satisfaction) with the version required by the document.
 
-### Backus-Naur Form for versions and specifiers
+### Backus-Naur Form for versions and version tags
 
 ```plaintext
 #::[BNF grammar for SemVer specifiers]
-‹version specifier› ::= "v" ‹version›
+‹version tag› ::= "v" ‹version›
 
 ‹version› ::= ‹major›
             | ‹major› "." ‹minor›
 
 ‹major› ::= ‹numeric identifier›
 ‹minor› ::= ‹numeric identifier›
+‹numeric identifier› ::= "0"
+                       | ‹positive digit›
+                       | ‹positive digit› ‹digits›
 ‹digits› ::= ‹digit›
            | ‹digit› ‹digits›
 
