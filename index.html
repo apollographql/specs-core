@@ -1,6 +1,6 @@
 <!doctype html>
 <script src=/boot.js></script>
-<title>Using Specifications</title>
+<title>The @using Directive</title>
 
 <div id=view>
 <main markdown>
@@ -96,6 +96,8 @@ Spec URLs contain information about the spec's [prefix](#prefixing) and [version
 
 Change the [prefix](#prefixing) for schema elements from this specification.
 
+When a `prefix` is provided, processors **must** configure the resulting implementation to replace the default prefix on the names of all [prefixed schema elements](#elements-which-should-be-prefixed) with the specified prefix.
+
 ```graphql
 #::[Using the `@using` directive with a custom prefix]
 schema @using(spec: "https://spec.example.com/example/v1", prefix: "eg") {
@@ -103,11 +105,15 @@ schema @using(spec: "https://spec.example.com/example/v1", prefix: "eg") {
 }
 
 type User {
+  # Specifying `prefix: "eg"` transforms @example_someDirective from
+  # the example spec into @eg_someDirective
   name: String @eg_someDirective
 }
-```
 
-When a `prefix` is provided, processors **must** configure the resulting implementation to use the specified prefix for all [prefixed schema elements](#elements-which-should-be-prefixed).
+# Prefix transformation must also be applied to definitions pulled in from
+# specifications.
+directive @eg_someDirective on FIELD
+```
 
 This argument has no effect on specs which do not introduce prefixed schema elements.
 
