@@ -32,7 +32,7 @@
 
 [GraphQL](https://spec.graphql.org/) provides extension points for user-defined behavior and metadata. These mainly come in the form of new directives, but specifications which build on GraphQL may in principle introduce object types, input objects, scalars, enums, interfaces, and unions as well.
 
-[GraphQL documents](https://spec.graphql.org/June2018/#sec-Type-System) do not provide a canonical way to declare the use of specs beyond GraphQL itself. Currently, this information is derived from context, or through some explicit, out-of-document paramenter provided to a spec processor. As a consequence, given only the text of a GraphQL document, there is no reliable way to discern what specifications—and importantly, what version of those specifications—the document conforms to.
+[GraphQL schema documents](https://spec.graphql.org/June2018/#sec-Type-System) do not provide a canonical way to declare the use of specs beyond GraphQL itself. Currently, this information is derived from context, or through some explicit, out-of-document parameter provided to tooling. As a consequence, given only the text of a GraphQL document, there is no reliable way to discern what specifications—and importantly, what version of those specifications—the document conforms to.
 
 This specification provides a solution in the form of a single new directive—the `@using` directive. This directive allows spec authors, schema authors, and schema processors to come to an agreement on which specifications a schema document is using.
 
@@ -47,8 +47,8 @@ graph TB
   proc-->output(["📄  Output Schema"])
 ```
 
-- **Authors (either human or machine)** write one or more `@using` directives into schema files to declare that the schema conforms to some set of specifications
-- **Machine processors** read the `@using` directives and compare them to a list of supported specs, activating the spec-mandated appropriate behaviors. Processors generally *pass through* schema elements they do not understand, although they may remove them or fail entirely, depending on the processor's needs and the spec's [listed purpose](#for).
+- **Authors (either human or machine)** write one or more `@using` directives into a schema document to declare that the schema conforms to some set of specifications
+- **Machine processors** read the `@using` directives and compare them to a list of supported specs, activating the spec-mandated appropriate behaviors. Processors generally *pass through* schema elements they do not understand.
 - **Human readers** see the `@using` directives and can follow the URLs to the specification, receiving an explanation of the requirements of the specification and what new directives, types, and other schema objects are available within the document.
 
 ## `@using` within a document
