@@ -1,6 +1,6 @@
 schema
-  @using(spec: "https://spec.example.com/specA/v1.0")
-  @using(spec: "https://spec.example.com/specB/v2.0", prefix: "B") {
+  @core(spec: "https://spec.example.com/specA/v1.0")
+  @core(spec: "https://spec.example.com/specB/v2.0", prefix: "B") {
   query: Query
 }
 
