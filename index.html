@@ -86,7 +86,7 @@ This basic example demonstrates the basic features of core schemas and the `@cor
 
 ```graphql
 #::[Definition of the `@core` directive]
-directive @core(using: String!, prefix: String)
+directive @core(using: String!, as: String)
   repeatable on SCHEMA
 ```
 
@@ -95,9 +95,9 @@ Documents **must** include a definition for the `@core` directive. The provided 
 - **Introduce new directive locations**, the behavior of which is unspecified here.
 - **Introduce new arguments.** New arguments **must** be prefixed, e.g. `example__feature: Bool`. The prefix **must** be the prefix of a spec referenced with this or another `@core` directive within the document.
 
-### `spec`
+### `using`
 
-A URL identifying the spec. When viewed, the URL **should** provide the content of the appropriate version of the specification in some human-readable form. In short, a human reader should be able to click the link and go to the docs for the version in use. It is not required that the *content* be machine-readable in any particular way.
+A URL specifying the directive and associated schema elements. When viewed, the URL **should** provide the content of the appropriate version of the specification in some human-readable form. In short, a human reader should be able to click the link and go to the docs for the version in use. It is not required that the *content* be machine-readable in any particular way.
 
 <figure>
   <figcaption>
@@ -112,27 +112,35 @@ A URL identifying the spec. When viewed, the URL **should** provide the content 
 
 Spec URLs contain information about the spec's [prefix](#prefixing) and [version](#versioning), and should be generated and processed in accordance with the [requirements on the structure of spec URLs](#spec-urls).
 
-### `prefix`
+### `as`
 
-Change the [prefix](#prefixing) for schema elements from this specification.
+Change the [names](#prefixing) of directives and schema elements from this specification.
 
-When a `prefix` is provided, processors **must** configure the resulting implementation to replace the default prefix on the names of all [prefixed schema elements](#elements-which-should-be-prefixed) with the specified prefix.
+When a `as` is provided, processors **must** configure the resulting implementation to replace the default name prefix on the names of all [prefixed schema elements](#elements-which-should-be-prefixed) with the specified name.
 
 ```graphql
 #::[Using the `@core` directive with a custom prefix]
-schema @core(using: "https://spec.example.com/example/v1", prefix: "eg") {
+schema @core(using: "https://spec.example.com/example/v1", as: "eg") {
   query: Query
 }
 
 type User {
-  # Specifying `prefix: "eg"` transforms @example_someDirective from
-  # the example spec into @eg_someDirective
-  name: String @eg__someDirective
+  # Specifying `as: "eg"` transforms @example into @eg
+  name: String @eg(data: ITEM)
 }
 
-# Prefix transformation must also be applied to definitions pulled in from
+# Additional specified schema elements must have their prefixes set
+# to the new name.
+#
+# This data enum was specified as `example__Data`, but will be renamed
+# as `eg__Data`:
+enum eg__Data {
+  ITEM
+}
+
+# Name transformation must also be applied to definitions pulled in from
 # specifications.
-directive @eg__someDirective on FIELD
+directive @eg on FIELD
 ```
 
 This argument has no effect on specs which do not introduce prefixed schema elements.
@@ -188,7 +196,7 @@ The final two segments of the URL's [path](https://tools.ietf.org/html/rfc3986#s
 <dl>
   <dt markdown>`identity: "https://spec.example.com/a/b/c/exampleSpec"`</dt>
   <dd>A global identifier for the spec. Processors can treat this as an opaque string identifying the spec (but not the version of the spec) for purposes of selecting an appropriate implementation.</dd>
-  <dt markdown>`prefix: "exampleSpec"`</dt>
+  <dt markdown>`as: "exampleSpec"`</dt>
   <dd markdown>The spec's default prefix for purposes of [prefixing](#prefixing) schema elements it defines or extends. URLs for specs which do not employ prefixing will still be interpreted as specifying a default prefix; the default prefix will simply have no effect on implementation behavior.</dd>
   <dt markdown>`version: "v1.0"`</dt>
   <dd markdown>The tag for the [version](#versioning) of the spec used to author the document. Processors **must** select an implementation of the spec which can [satisfy](#satisfaction) the specified version.</dd>
@@ -353,9 +361,9 @@ An exception to this is processors which prepare the schema for final public con
 
 **Formal Specification**
 - For each `@core` directive `d` on the SchemaDefinition within the Document,
-  - Let `prefix` be the spec's [prefix](#prefixing) as specified by the directive's `prefix:` argument or, if the argument is not present, the default prefix specified in the [spec url](#spec-urls).   
+  - Let `prefix` be the spec's [prefix](#prefixing) as specified by the directive's `as:` argument or, if the argument is not present, the default prefix specified in the [spec url](#spec-urls).   
   - For each other `@core` directive `e` where `e ≠ d` on the SchemaDefinition within the Document,
-    - Let `otherPrefix` be the spec's [prefix](#prefixing) as specified by the directive's `prefix:` argument or, if the argument is not present, the prefix specified in the [spec url](#spec-urls).
+    - Let `otherPrefix` be the spec's [prefix](#prefixing) as specified by the directive's `as:` argument or, if the argument is not present, the prefix specified in the [spec url](#spec-urls).
     - `otherPrefix` must not equal `prefix`
 
 **Explanatory Text**
@@ -372,7 +380,7 @@ It is also valid to reference multiple versions of the same spec under different
   title="Explicit prefixes allow multiple versions of the same spec to coexist within a Document"
 ></view-of>
 
-Without the explicit `prefix:`, the above would be invalid:
+Without the explicit `as:`, the above would be invalid:
 
 <view-of src=prefix-uniqueness.graphql#schema[1]
   title="Counter-example of non-unique prefixes with multiple versions of the same spec"
