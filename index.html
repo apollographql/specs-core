@@ -224,9 +224,11 @@ When extracting the URL's `prefix` and `version`, processors **must** ignore any
 The version is in the URL because when a human reader visits the URL, we would like them to be taken to the documentation for the *version of the specification in use by this document*. Many text editors will turn URLs into hyperlinks, and it's highly desirable that clicking the link takes the user to the correct version of the docs. Putting the version information in a separate argument to the `@core` directive would require this.
 
 ## Prefixing
-Specifications meant to be referenced via `@core` **should** prefix any schema elements they introduce. The prefix **must** be a string of characters valid within GraphQL typenames, with the exception of `"_"`.
+Specifications meant to be referenced via `@core` **should** prefix any schema elements they introduce. The prefix:
+1. **must** be a string of characters valid within GraphQL typenames, with the exception of two underscores (`"__"`)
+2. **must** match the default name of the spec, as derived from the spec's URL.
 
-Specs **should** define any new schema elements with names that start with `prefix_`.
+With the exception of their root directive, specs **should** define any new schema elements with names that start with `$name__`. The root directive can simply be named with the name of the spec.
 
 ```graphql
 #::[Using the `@core` directive with a spec's default name]
@@ -235,8 +237,16 @@ schema @core(using: "https://spec.example.com/example/v1.0") {
 }
 
 type User {
-  name: String @example
-} 
+  name: String @example(data: ITEM)
+}
+
+# An enum used to provide structured data to the example spec.
+# It is prefixed with the name of the spec.
+enum example__Data {
+  ITEM
+}
+
+directive @example(data: example__Data) on FIELD
 ```
 
 The language of the spec **should** specify the default prefix and **should** identify locations where the prefix is used. The prefix **should not** be elided within documentation; definitions of schema elements provided within the spec **must** include the default prefix.
