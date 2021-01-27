@@ -1,6 +1,6 @@
 schema
-  @core(spec: "https://specs.example.com/A/1.0") # prefix is A
-  @core(spec: "https://specs.example.com/A/2.0") # prefix is A
+  @core(using: "https://specs.example.com/A/1.0") # prefix is A
+  @core(using: "https://specs.example.com/A/2.0") # prefix is A
 {
   query: Query
 }

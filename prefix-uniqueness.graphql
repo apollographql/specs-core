@@ -1,20 +1,20 @@
 schema
-  @core(spec: "https://specs.example.com/A/1.0")               # prefix is A
-  @core(spec: "https://specs.example.com/A/2.0", prefix: "A2") # prefix is A2
+  @core(using: "https://specs.example.com/A/1.0")               # prefix is A
+  @core(using: "https://specs.example.com/A/2.0", prefix: "A2") # prefix is A2
 {
   query: Query
 }
 
 schema
-  @core(spec: "https://specs.example.com/A/1.0") # prefix is A
-  @core(spec: "https://specs.example.com/A/2.0") # prefix is A
+  @core(using: "https://specs.example.com/A/1.0") # prefix is A
+  @core(using: "https://specs.example.com/A/2.0") # prefix is A
 {
   query: Query
 }
 
 schema
-  @core(spec: "https://specs.example.com/A/1.0")              # prefix is A
-  @core(spec: "https://www.specs.com/specA/1.1", prefix: "A") # prefix is A
+  @core(using: "https://specs.example.com/A/1.0")              # prefix is A
+  @core(using: "https://www.specs.com/specA/1.1", prefix: "A") # prefix is A
 {
   query: Query
 }

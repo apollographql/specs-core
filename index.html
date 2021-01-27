@@ -68,8 +68,8 @@ The `@core` directive is applied to `schema` declarations to declare that the sc
 ```graphql
 #::[Using the `@core` directive]
 schema
-  @core(spec: "https://lib.apollo.dev/core/v0.1")
-  @core(spec: "https://specs.example.com/example/v1.0") {
+  @core(using: "https://lib.apollo.dev/core/v0.1")
+  @core(using: "https://specs.example.com/example/v1.0") {
   query: Query
 }
 
@@ -86,7 +86,7 @@ This basic example demonstrates the basic features of core schemas and the `@cor
 
 ```graphql
 #::[Definition of the `@core` directive]
-directive @core(spec: String!, prefix: String)
+directive @core(using: String!, prefix: String)
   repeatable on SCHEMA
 ```
 
@@ -120,7 +120,7 @@ When a `prefix` is provided, processors **must** configure the resulting impleme
 
 ```graphql
 #::[Using the `@core` directive with a custom prefix]
-schema @core(spec: "https://spec.example.com/example/v1", prefix: "eg") {
+schema @core(using: "https://spec.example.com/example/v1", prefix: "eg") {
   query: Query
 }
 
@@ -145,7 +145,7 @@ Specifications **may** include the following language to instruct schema authors
 > and the specification URL `SPEC_URL`:
 >
 > ```graphql
-> schema @core(spec: SPEC_URL) {
+> schema @core(using: SPEC_URL) {
 >   query: Query
 > }
 > ```
@@ -156,7 +156,7 @@ Specifications **may** include the following language to instruct schema authors
 > and the specification URL `https://specs.example.com/example/v1`:
 >
 > ```graphql
-> schema @core(spec: "https://specs.example.com/example/v1") {
+> schema @core(using: "https://specs.example.com/example/v1") {
 >   query: Query
 > }
 > ```
@@ -222,7 +222,7 @@ Specs **should** define any new schema elements with names that start with `pref
 
 ```graphql
 #::[Using the `@core` directive with a spec's default prefix]
-schema @core(spec: "https://spec.example.com/example/v1") {
+schema @core(using: "https://spec.example.com/example/v1") {
   query: Query
 }
 
