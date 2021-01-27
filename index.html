@@ -140,7 +140,7 @@ enum eg__Data {
 
 # Name transformation must also be applied to definitions pulled in from
 # specifications.
-directive @eg on FIELD
+directive @eg(data: eg__Data) on FIELD
 ```
 
 This argument has no effect on specs which do not introduce prefixed schema elements.
@@ -186,7 +186,7 @@ There are, however, requirements on the structure of the URL itself:
     <a name=basic-anatomy-of-a-spec-url href=#basic-anatomy-of-a-spec-url class=a-header>Basic anatomy of a spec URL</a>
   </figcaption>  
   <code class=anatomy>
-    <span class=pink style='--depth: 2'>https://spec.example.com/a/b/c/<span>exampleSpec<aside>prefix</aside></span><aside>
+    <span class=pink style='--depth: 2'>https://spec.example.com/a/b/c/<span>exampleSpec<aside>name</aside></span><aside>
       identity
     </aside></span>/<span style='--depth: 2' class=green>v1.0<aside>version</aside></span>
   </code>
@@ -197,7 +197,7 @@ The final two segments of the URL's [path](https://tools.ietf.org/html/rfc3986#s
   <dt markdown>`identity: "https://spec.example.com/a/b/c/exampleSpec"`</dt>
   <dd>A global identifier for the spec. Processors can treat this as an opaque string identifying the spec (but not the version of the spec) for purposes of selecting an appropriate implementation.</dd>
   <dt markdown>`as: "exampleSpec"`</dt>
-  <dd markdown>The spec's default prefix for purposes of [prefixing](#prefixing) schema elements it defines or extends. URLs for specs which do not employ prefixing will still be interpreted as specifying a default prefix; the default prefix will simply have no effect on implementation behavior.</dd>
+  <dd markdown>The spec's name, for purposes of [prefixing](#prefixing) schema elements it defines or extends. URLs for specs which do not employ prefixing will still be interpreted as having a name; the default prefix will simply have no effect on implementation behavior.</dd>
   <dt markdown>`version: "v1.0"`</dt>
   <dd markdown>The tag for the [version](#versioning) of the spec used to author the document. Processors **must** select an implementation of the spec which can [satisfy](#satisfaction) the specified version.</dd>
 </dl>
@@ -213,7 +213,7 @@ When extracting the URL's `prefix` and `version`, processors **must** ignore any
     <a name=spec-url-ignore-meaningless href=#spec-url-ignore-meaningless class=a-header>Ignoring meaningless parts of a URL</a>
   </figcaption>  
   <code class=anatomy>
-    <span class=pink style='--depth: 2'>https://example.com/<span>exampleSpec<aside>prefix</aside></span><aside>
+    <span class=pink style='--depth: 2'>https://example.com/<span>exampleSpec<aside>name</aside></span><aside>
       identity
     </aside></span>/<span style='--depth: 2' class=green>v1.0<aside>version</aside></span><span class=grey>?key=val&k2=v2#fragment<aside>ignored</aside></span>
   </code>
@@ -229,15 +229,14 @@ Specifications meant to be referenced via `@core` **should** prefix any schema e
 Specs **should** define any new schema elements with names that start with `prefix_`.
 
 ```graphql
-#::[Using the `@core` directive with a spec's default prefix]
-schema @core(using: "https://spec.example.com/example/v1") {
+#::[Using the `@core` directive with a spec's default name]
+schema @core(using: "https://spec.example.com/example/v1.0") {
   query: Query
 }
 
 type User {
-  name: String @example_someDirective
-               # prefixed directive from the example spec
-}
+  name: String @example
+} 
 ```
 
 The language of the spec **should** specify the default prefix and **should** identify locations where the prefix is used. The prefix **should not** be elided within documentation; definitions of schema elements provided within the spec **must** include the default prefix.

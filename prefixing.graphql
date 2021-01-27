@@ -1,6 +1,6 @@
 schema
   @core(using: "https://spec.example.com/specA/v1.0")
-  @core(using: "https://spec.example.com/specB/v2.0", prefix: "B") {
+  @core(using: "https://spec.example.com/specB/v2.0", as: "B") {
   query: Query
 }
 
@@ -12,7 +12,7 @@ type specA_SomeType {
   nativeField is a field defined by specA on a type also defined
   by specA (namely specA_SomeType)
   """
-  nativeField: Int @specA_fieldDirective
+  nativeField: Int @specA__fieldDirective
 
   """
   B_foreignField is a field defined by specB on a type defined
@@ -49,6 +49,6 @@ Root directives carry only the prefix of their spec.
 directive @B on ENUM_VALUE
 
 """
-@specA_fieldDirective is a directive defined by specA
+@specA__fieldDirective is a non-root directive defined by specA
 """
-directive @specA_fieldDirective on FIELD
+directive @specA__fieldDirective on FIELD
