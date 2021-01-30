@@ -1,0 +1,12 @@
+schema
+  @core(using: "https://lib.apollo.dev/core/v0.1")
+  @core(using: "https://specs.example.com/example/v1.0")
+{
+  query: Query
+}
+
+type SomeType {
+  field: Int @example
+}
+
+directive @example on FIELD

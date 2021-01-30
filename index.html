@@ -1,6 +1,52 @@
 <!doctype html>
 <script src=/boot.js></script>
 <title>Core Schemas</title>
+<style>
+  html {
+    --radius: 3em;
+    --diameter: calc(var(--radius) * 2);
+    --outset: 10px;
+    --tron: fuchsia;
+  }
+
+  .core {
+    width: var(--diameter);
+    height: var(--diameter);
+    border-radius: var(--radius);
+    line-height: var(--diameter);
+    text-align: center; 
+    background: var(--silver-dark);
+    color: var(--midnight-darkest);
+    font-variant: small-caps;
+    font-weight: bold;
+    font-size: 16pt;
+    position: relative;
+    transition: background 0.3s;
+  }
+
+  .core::after {
+    --neg-outset: calc(0px - var(--outset));
+    --outer-radius: calc(var(--radius) + var(--outset));
+
+    position: absolute;
+    top: var(--neg-outset);
+    left: var(--neg-outset);
+    bottom: var(--neg-outset);
+    right: var(--neg-outset);
+    border: 2px solid var(--grey-base);
+    content: '';
+    border-radius: var(--outer-radius);
+    z-index: -100;
+    background: var(--midnight-darkest);
+  }
+
+  .hbox {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    margin: 3em;
+  }
+</style>
 
 <div id=view>
 <main markdown>
@@ -30,15 +76,47 @@
 
 ## Problem
 
-[GraphQL](https://spec.graphql.org/) provides *directives* to attach user-defined metadata to GraphQL document. Directives are highly flexible, and can be used to suggest behavior, define features of a graph which are not otherwise evident in the schema.
+[GraphQL](https://spec.graphql.org/) provides directives as a means of attaching user-defined metadata to a GraphQL document. Directives are highly flexible, and can be used to suggest behavior and define features of a graph which are not otherwise evident in the schema.
 
-Alas, **GraphQL does not provide a mechanism to identify or version directives**. Given a particular directive—e.g. `@external`—processors are expected to know how to interpret the directive based only on its name, definition within the document, and additional configuration from outside the document. This is unfortunate, because it means that any piece of software which serves a schema needs two pieces of configuration: the schema, and metadata about how to interpret the schema. These two pieces of configuration are generally in separate formats, and must be maintained in sync throughout the schema processing pipeline. GraphQL schemas are generally intended to be self-describing, and this lack of clarity effectively breaks that contract: given a schema, programs do not necessarily know how to interpret it, and certainly not how to serve it.
+Alas, **GraphQL does not provide a mechanism to globally identify or version directives**. Given a particular directive—e.g. `@external`—processors are expected to know how to interpret the directive based only on its name, definition within the document, and additional configuration from outside the document. This means that programs interpreting these directives have two options:
 
-Core schemas rectify this problem by providing a clear and concise way for schema documents to specify the intended meaning of the directives (and other supporting schema elements) which they contain. The intention behind core schemas is to provide a *single document* which provides all the necessary configuration of a *data core*—some program which serves the schema to GraphQL clients, primarily following directives in order to determine how to resolve queries made against that schema.
+  1. rely on a hardcoded interpretation for directives with certain signatures, or
+  2. accept additional configuration about how to interpret directives in the schema.
 
-To that end, we introduce a new directive, the `@core` directive, which allows documents to reference versioned, namespaced *specifications* which describe the intended behavior of those directives and any supporting schema elements (primarily types in the input schema which can serve as arguments to the directive).
+The first solution is fragile, particularly as GraphQL has no built-in namespacing mechanisms, so the possibility of name collisions always looms.
 
-## Actors
+The second is unfortunate: GraphQL schemas are generally intended to be self-describing, and requiring additional configuration subtly undermines this guarantee: given just a schema, programs do not necessarily know how to interpret it, and certainly not how to serve it. It also creates the possibility for the schema and configuration to fall out of sync, leading to issues which can manifest late in a deployment pipeline.
+
+## Core Schemas
+
+Introducing **core schemas**.
+
+<div class=hbox>
+  <a class='core'>
+    core schema
+  </a>
+</div>
+
+A basic core schema:
+
+<view-of src=basic.graphql title='Basic core schema'></view-of>
+
+**Core schemas** provide a clear and concise mechanism for schema documents to specify the intended meaning of the directives which they contain. Additionally, they provide:
+  - [**Flexible namespacing rules.**](#prefixing) It is always possible to represent any GraphQL schema within a core schema document. Additionally, documents can [choose the names](#as) they use for the directives they reference, guaranteeing that namespace collisions can always be resolved.
+  - [**Directive versioning.**](#versioning) Directive specifications follow [semver-like semantic versioning principles](#versioning), which helps schema processors determine if they are able to correctly interpret a document's metadata.
+  - [**Standard rules for extensibility**](#extensibility) of directives and their associated input types. These rules allow specs to annotate each others' metadata, effectively providing "directives on directives," which are otherwise impossible within the GraphQL schema language
+
+**Core schemas are not a new language.** All core schema documents are valid GraphQL schema documents. However, this specification introduces new requirements, so not all valid GraphQL schemas are valid core schemas.
+
+The broad intention behind core schemas is to provide a *single document* which provides all the necessary configuration of a *data core*—some program which serves the schema to GraphQL clients, primarily by following directives in order to determine how to resolve queries made against that schema.
+
+### Parts of a Core Schema
+
+When talking about a core schema, we can broadly break it into two pieces:
+- an **export schema**, which contains schema elements (objects, interfaces, enums, directives, etc.) which **should** be served to clients, and
+- **machinery** consisting of directives and associated input types (such as enums and input objects). Machinery **must not** be served to clients.
+
+## Roles
 
 ```mermaid
 #::[Actors who may be interested in the core schemas]
@@ -60,42 +138,120 @@ graph TB
 - **Authors (either human or machine)** write an initial core schema as specified in this document, including versioned `@core` requests for all directives they use
 - **Machine processors** can process core schemas and output new core schemas. The versioning of directives and associated schema elements provided by the `@core` allows processors to operate on directives they understand and pass through directives they do not.
 - **Human readers** can examine the core schema at various stages of processing. At any stage, they can examine the `@core` directives and follow URLs to the specification, receiving an explanation of the requirements of the specification and what new directives, types, and other schema objects are available within the document.
+- **Data cores** can then pick up the processed core schema and provide some data-layer service with it. Typically this means serving the export schema as a GraphQL endpoint, using metadata defined by machinery to inform how it processes operations it receives. However, data cores may perform other tasks described in the core schema, such as routing to backend services, caching commonly-accessed fields and queries, and so on. The term "data core" is intended to capture this multiplicity of possible activities.
 
-## `@core` within a document
+## The Basics
 
-The `@core` directive is applied to `schema` declarations to declare that the schema uses a particular spec. For example,
+Core schemas:
+  1. **must** be valid GraphQL schema documents,
+  2. **must** contain exactly one `SchemaDefinition`, and
+  3. **should** use the `@core` directive on their schema definition to declare any directives they reference by
+  [`@core(using:)`](#using) a [well-formed specification URL](#spec-urls)
+
+The first `@core` directive on the schema **must** reference the core spec itself, i.e. this document.
+
+<view-of src=basic.graphql title='Basic core schema using @core and @example'></view-of>
+
+### Handling unspecified passthrough directives with `@core(exports:)`
+
+Existing schemas likely contain definitions for directives which are not versioned, have no specification document, and are intended mainly to be passed through. This is the default behavior for core schema processors:
 
 ```graphql
-#::[Using the `@core` directive]
+#::[Unspecified directives are passed through]
 schema
   @core(using: "https://lib.apollo.dev/core/v0.1")
-  @core(using: "https://specs.example.com/example/v1.0") {
+{
+  query: Query
+}
+
+type SomeType {
+  field: Int @another
+}
+
+# `@another` is unspecified. Core processors will not extract metadata from
+# it, but its definition and all usages within the schema will be exposed
+# in the export schema.
+directive @another on FIELD
+```
+
+### Renaming `@core` itself
+
+It is possible to rename the `@core` directive was is used for renaming other directives:
+
+```graphql
+#::[Renaming `@core`]
+schema
+  @coreSchema(using: "https://lib.apollo.dev/core/v0.1", as: "coreSchema")
+  @coreSchema(using: "https://example.com/example/v1.0")
+{
   query: Query
 }
 
 type SomeType {
   field: Int @example
 }
+
+directive @example on FIELD
 ```
 
-This basic example demonstrates the basic features of core schemas and the `@core` directive:
-1. Directives and associated schema elements can be linked to the schema via the `@core` directive
-2. The first `@core` directive **must** reference the core spec itself.
+## `@core` directive forms
 
-## The `@core` directive
+The `@core` directive takes two [forms](#directive-forms):
 
 ```graphql
-#::[Definition of the `@core` directive]
+#::[Forms of the `@core` directive]
 directive @core(using: String!, as: String)
   repeatable on SCHEMA
+
+directive @core(export: Boolean!)
+  repeatable on
+  | SCALAR
+  | OBJECT
+  | FIELD_DEFINITION
+  | ARGUMENT_DEFINITION
+  | INTERFACE
+  | UNION
+  | ENUM
+  | ENUM_VALUE
+  | INPUT_OBJECT
+  | INPUT_FIELD_DEFINITION
 ```
 
-Documents **must** include a definition for the `@core` directive. The provided definition does not have to match the above definition exactly. Instead, it must be *compatible*. A conforming definition may:
-- **Omit optional arguments** if they are never used in the document.
+All usages of `@core` within a document must be [**discernable**](#discernability) as one of these forms.
+
+Documents **must** include **exactly one** definition for the `@core` directive. The provided definition does not have to (and likely will not) match *either* of the above forms precisely. Instead, it must be *compatible* with both forms and with all usages in the document. For example, the following definition is guarateed to be compatible:
+
+```graphql
+#::[Guaranteed-compatible definition of the `@core` directive]
+directive @core(
+  using: String,
+  as: String,
+  export: Boolean
+) repeatable on
+  | SCHEMA
+  | SCALAR
+  | OBJECT
+  | FIELD_DEFINITION
+  | ARGUMENT_DEFINITION
+  | INTERFACE
+  | UNION
+  | ENUM
+  | ENUM_VALUE
+  | INPUT_OBJECT
+  | INPUT_FIELD_DEFINITION
+```
+
+Additionally, conforming definitions may:
+- **Omit optional arguments** if they are never used in the document,
+- **Omit locations** where the directive never occurs,
 - **Introduce new directive locations**, the behavior of which is unspecified here.
 - **Introduce new arguments.** New arguments **must** be prefixed, e.g. `example__feature: Bool`. The prefix **must** be the prefix of a spec referenced with this or another `@core` directive within the document.
 
-### `using`
+## `@core(using: String!, as: String) repeatable on SCHEMA`
+
+Reference a directive specification from this document.
+
+### `using: String`
 
 A URL specifying the directive and associated schema elements. When viewed, the URL **should** provide the content of the appropriate version of the specification in some human-readable form. In short, a human reader should be able to click the link and go to the docs for the version in use. It is not required that the *content* be machine-readable in any particular way.
 
@@ -104,7 +260,7 @@ A URL specifying the directive and associated schema elements. When viewed, the 
     <a name=anatomy-of-a-spec-url href=#anatomy-of-a-spec-url class=a-header>Basic anatomy of a spec URL</a>
   </figcaption>  
   <code class=anatomy>
-    <span class=pink style='--depth: 2'>http://spec.example.com/a/b/c/<span>exampleSpec<aside>prefix</aside></span><aside>
+    <span class=pink style='--depth: 2'>http://spec.example.com/a/b/c/<span>exampleSpec<aside>name</aside></span><aside>
       identity
     </aside></span>/<span style='--depth: 2' class=green>v1<aside>version</aside></span>
   </code>
@@ -112,7 +268,7 @@ A URL specifying the directive and associated schema elements. When viewed, the 
 
 Spec URLs contain information about the spec's [prefix](#prefixing) and [version](#versioning), and should be generated and processed in accordance with the [requirements on the structure of spec URLs](#spec-urls).
 
-### `as`
+### `as: String`
 
 Change the [names](#prefixing) of directives and schema elements from this specification.
 
@@ -143,17 +299,22 @@ enum eg__Data {
 directive @eg(data: eg__Data) on FIELD
 ```
 
-This argument has no effect on specs which do not introduce prefixed schema elements.
+## `@core(export: Boolean)` *on any [`TypeSystemDirectiveLocation`](https://spec.graphql.org/June2018/#DirectiveLocations)*
 
-## Requiring `@core` within a spec
+`@core(export:)` can occur at any location. Elements with `@core(export: true)` will always be included in the export schema. Elements with `@core(export: false)` will always be excluded from the export schema.
 
-Specifications **may** include the following language to instruct schema authors to use `@core` to indicate documents which are intended to conform to the specification:
+## Requiring core schemas within a spec
 
-> SPEC_NAME schema documents **must**/**should**/**may** have a `schema` declaration with a [`@core` directive](/core/drafts/pre-0)
-> and the specification URL `SPEC_URL`:
+Specifications **may** include the following language to instruct schema authors to use core schema mechanisms to reference them:
+
+> SPEC_NAME schema documents **must** be valid [core schemas](/core/drafts/pre-0), and must
+> reference SPEC_NAME and the specification URL `SPEC_URL`:
 >
 > ```graphql
-> schema @core(using: SPEC_URL) {
+> schema
+>   @core(using: "https://lib.apollo.dev/core/v0.1")
+>   @core(using: SPEC_URL)
+> {
 >   query: Query
 > }
 > ```
@@ -161,10 +322,13 @@ Specifications **may** include the following language to instruct schema authors
 `SPEC_NAME` and `SPEC_URL` should be replaced with the names and URLs for the specification. For example:
 
 > Example Spec schema documents **must** have a `schema` declaration with a [`@core` directive](/core/drafts/pre-0)
-> and the specification URL `https://specs.example.com/example/v1`:
+> and the specification URL `https://specs.example.com/example/v1.0`:
 >
 > ```graphql
-> schema @core(using: "https://specs.example.com/example/v1") {
+> schema
+>   @core(using: "https://lib.apollo.dev/core/v0.1")
+>   @core(using: "https://specs.example.com/example/v1")
+> {
 >   query: Query
 > }
 > ```
@@ -196,8 +360,8 @@ The final two segments of the URL's [path](https://tools.ietf.org/html/rfc3986#s
 <dl>
   <dt markdown>`identity: "https://spec.example.com/a/b/c/exampleSpec"`</dt>
   <dd>A global identifier for the spec. Processors can treat this as an opaque string identifying the spec (but not the version of the spec) for purposes of selecting an appropriate implementation.</dd>
-  <dt markdown>`as: "exampleSpec"`</dt>
-  <dd markdown>The spec's name, for purposes of [prefixing](#prefixing) schema elements it defines or extends. URLs for specs which do not employ prefixing will still be interpreted as having a name; the default prefix will simply have no effect on implementation behavior.</dd>
+  <dt markdown>`name: "exampleSpec"`</dt>
+  <dd markdown>The spec's name, for purposes of [prefixing](#prefixing) schema elements it defines or extends.</dd>
   <dt markdown>`version: "v1.0"`</dt>
   <dd markdown>The tag for the [version](#versioning) of the spec used to author the document. Processors **must** select an implementation of the spec which can [satisfy](#satisfaction) the specified version.</dd>
 </dl>
@@ -341,6 +505,57 @@ For every spec they support, processors **must** activate an implementation whic
 ‹digit› ::= "0"
           | ‹positive digit›
 ‹positive digit› ::= "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+```
+
+## Extensibility
+
+All directives, scalars, enums, input objects, and other schema elements defined by specs are **extensible**. This means that their definitions within a core schema document do not have to exactly match definitions provided by specs. Instead, definitions should match all usages within the document.
+
+Standard extensibility rules:
+- **Directives** may be defined as taking additional arguments, provided those arguments are [prefixed](#prefixing) with the name of a spec followed by two underscores ("`__`"). These arguments are interpreted as metadata-on-metadata, and are routed to the declaring spec for interpretation
+- **Enums** defined in specs may include values of any name. The space of **unprefixed** names belongs to the document. The space of **prefixed** names belongs to the spec with that prefix, and may be used to pass data between specs.
+- **Input Objects** may be defined with additional fields, provided those fields are [prefixed](#prefixing) with the name of a spec followed by two underscores
+
+
+## Directive Forms
+
+Specs may define as taking multiple **forms**. For example, the `@core` directive itself has two forms:
+
+```graphql
+#::[Forms of the `@core` directive]
+directive @core(using: String!, as: String)
+  repeatable on SCHEMA
+
+directive @core(exports: [String!]!)
+  on SCHEMA
+```
+
+### Discernability
+
+All directive forms a spec provides must be **discernable**. That is, a given usage of the directive which is valid according to one form **must not** be a valid usage of any other form.
+
+A single, unique, non-optional argument for each form satisfies this requirement.
+
+While specs may indicate multiple directive forms, including multiple definitions of the same directive in a document is impossible. Instead, authors must include a definition which is compatible with all usages of the directive within the document, in addition to being compatible with the specified forms.
+
+It is possible for specs to define forms which **cannot** be conjuncted within a document. This typically happens when an argument with a particular name has multiple incompatible scalar representations. For example:
+
+```graphql
+#::[Example of non-conjunctible forms]
+enum example__Data {}
+
+directive @example(value: String!) on SCHEMA
+directive @example(value: example__Data!) on SCHEMA
+```
+
+`value: example__Data` must be represented as an unquoted enum value, but `value: String` must be represented as a quoted string. There is no way to combine these two forms of `@example` into a single valid GraphQL directive definition. Accordingly, they cannot both occur within the same document. Similar conflicts occur if an argument is named as both an input object and a scalar, for instance. Spec authors should generally strive to avoid these situations by selecting a new name for the new argument and marking the older form with `@deprecated`:
+
+```graphql
+#::[Example of conjunctible forms]
+enum example__Data {}
+
+directive @example(value: String! @deprecated) on SCHEMA
+directive @example(data: example__Data!) on SCHEMA
 ```
 
 ## Processing Schemas
