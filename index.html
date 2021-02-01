@@ -108,7 +108,7 @@ The first `@core` directive on the schema **must** reference the core spec itsel
 
 <view-of src=basic.graphql title='Basic core schema using @core and @example'></view-of>
 
-### Handling unspecified passthrough directives with `@core(exports:)`
+### Unspecified directives are passed through
 
 Existing schemas likely contain definitions for directives which are not versioned, have no specification document, and are intended mainly to be passed through. This is the default behavior for core schema processors:
 
@@ -132,7 +132,7 @@ directive @another on FIELD
 
 ### Renaming `@core` itself
 
-It is possible to rename the `@core` directive was is used for renaming other directives:
+It is possible to rename the `@core` directive itself with the same `as` mechanism used for all specs:
 
 ```graphql
 #::[Renaming `@core`]
