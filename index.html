@@ -1,52 +1,7 @@
 <!doctype html>
 <script src=/boot.js></script>
+<link rel=stylesheet href=/tron.css>
 <title>Core Schemas</title>
-<style>
-  html {
-    --radius: 3em;
-    --diameter: calc(var(--radius) * 2);
-    --outset: 10px;
-    --tron: fuchsia;
-  }
-
-  .core {
-    width: var(--diameter);
-    height: var(--diameter);
-    border-radius: var(--radius);
-    line-height: var(--diameter);
-    text-align: center; 
-    background: var(--silver-dark);
-    color: var(--midnight-darkest);
-    font-variant: small-caps;
-    font-weight: bold;
-    font-size: 16pt;
-    position: relative;
-    transition: background 0.3s;
-  }
-
-  .core::after {
-    --neg-outset: calc(0px - var(--outset));
-    --outer-radius: calc(var(--radius) + var(--outset));
-
-    position: absolute;
-    top: var(--neg-outset);
-    left: var(--neg-outset);
-    bottom: var(--neg-outset);
-    right: var(--neg-outset);
-    border: 2px solid var(--grey-base);
-    content: '';
-    border-radius: var(--outer-radius);
-    z-index: -100;
-    background: var(--midnight-darkest);
-  }
-
-  .hbox {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: center;
-    margin: 3em;
-  }
-</style>
 
 <div id=view>
 <main markdown>
@@ -92,8 +47,9 @@ The second is unfortunate: GraphQL schemas are generally intended to be self-des
 Introducing **core schemas**.
 
 <div class=hbox>
-  <a class='core'>
-    core schema
+  <a class=core>
+    <div class=ring></div>
+    <div class=nucleus>core schema</div>
   </a>
 </div>
 
