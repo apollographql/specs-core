@@ -78,7 +78,7 @@
 
 [GraphQL](https://spec.graphql.org/) provides directives as a means of attaching user-defined metadata to a GraphQL document. Directives are highly flexible, and can be used to suggest behavior and define features of a graph which are not otherwise evident in the schema.
 
-Alas, **GraphQL does not provide a mechanism to globally identify or version directives**. Given a particular directive—e.g. `@external`—processors are expected to know how to interpret the directive based only on its name, definition within the document, and additional configuration from outside the document. This means that programs interpreting these directives have two options:
+Alas, *GraphQL does not provide a mechanism to globally identify or version directives*. Given a particular directive—e.g. `@external`—processors are expected to know how to interpret the directive based only on its name, definition within the document, and additional configuration from outside the document. This means that programs interpreting these directives have two options:
 
   1. rely on a hardcoded interpretation for directives with certain signatures, or
   2. accept additional configuration about how to interpret directives in the schema.
