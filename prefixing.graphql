@@ -1,54 +1,59 @@
 schema
-  @core(using: "https://spec.example.com/specA/v1.0")
-  @core(using: "https://spec.example.com/specB/v2.0", as: "B") {
+  @core(feature: "https://spec.example.com/featureA/v1.0")
+  @core(feature: "https://spec.example.com/featureB/v2.0", as: "B") {
   query: Query
 }
 
 """
-specA_SomeType is a type defined by spec A.
+featureA_SomeType is a type defined by feature A.
 """
-type specA_SomeType {
+type featureA_SomeType {
   """
-  nativeField is a field defined by specA on a type also defined
-  by specA (namely specA_SomeType)
+  nativeField is a field defined by featureA on a type also defined
+  by featureA (namely featureA_SomeType)
   """
-  nativeField: Int @specA__fieldDirective
+  nativeField: Int @featureA__fieldDirective
 
   """
-  B_foreignField is a field defined by specB on a type defined
-  by specA (namely specA_SomeType)
+  B_foreignField is a field defined by featureB on a type defined
+  by featureA (namely featureA_SomeType)
   """
   B_foreignField: Int
 }
 
 """
-specA_SomeInput is an input defined by spec A.
+featureA_SomeInput is an input specified by feature A
 """
-input specA_SomeInput {
+input featureA_SomeInput {
   """
-  nativeInputField is defined by specA
+  nativeInputField is defined by featureA
   """
   nativeInputField: Int
 
   """
-  B_field is defined by specB as a field on specA_SomeInput
+  B_field is defined by featureB as a field on featureA_SomeInput
   """
   B_field: String
 }
 
 """
-specA_Items is defined by spec A
+featureA_Items is specified by feature A
 """
-enum specA_Items { ONE, TWO, THREE @B }
+enum featureA_Items { ONE, TWO, THREE @B }
 
 """
-@B is the root directive defined by specB
+@B is the root directive defined by featureB
 
-Root directives carry only the prefix of their spec.
+Root directives are named after their feature
 """
 directive @B on ENUM_VALUE
 
 """
-@specA__fieldDirective is a non-root directive defined by specA
+@featureA__fieldDirective is a non-root (prefixed) directive defined by featureA
 """
-directive @specA__fieldDirective on FIELD
+directive @featureA__fieldDirective on FIELD
+
+directive @core(feature: core__FeatureUrl, as: String, export: Boolean)
+
+scalar core__FeatureUrl
+  @specifiedBy(url: "https://lib.apollo.dev/core/v0.1#core__FeatureUrl")
