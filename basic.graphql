@@ -5,10 +5,6 @@ schema
   query: Query
 }
 
-#! this is something
-#! that we could
-#! do
-
 type SomeType {
   field: Int @example
 }
