@@ -166,7 +166,7 @@ Documents **must** include a definition for the `@core` directive. The provided 
 - **Introduce new directive locations**, the behavior of which is unspecified here.
 - **Introduce new arguments.** New arguments **must** be prefixed, e.g. `example__extensionArgument: Bool`. The prefix **must** be the name of a feature referenced with this or another `@core` directive within the document.
 
-### `feature: core__FeatureUrl`
+### `feature: `[core__FeatureUrl](#core__featureurl)
 
 A [feature URL](#core__FeatureUrl) specifying the directive and associated schema elements. When viewed, the URL **should** provide the content of the appropriate version of the specification in some human-readable form. In short, a human reader should be able to click the link and go to the docs for the version in use. There are specific requirements on the format of the URL, but it is not required that the *content* be machine-readable in any particular way.
 
@@ -447,12 +447,12 @@ If a processor chooses to activate support for a feature, the processor **must**
 
 ## Extensibility
 
-All directives, scalars, enums, input objects, and other schema elements defined by specs are **extensible**. This means that their definitions within a core schema document do not have to exactly match definitions provided by specs. Instead, definitions should match all usages within the document.
+Any directives, scalars, enums, input objects, and other schema elements defined by specs **may** be **extensible**. This means that their definitions within a core schema document do not have to exactly match definitions provided by specs. Instead, definitions should match all usages within the document.
 
 Standard extensibility rules:
-- **Directives** may be defined as taking additional arguments, provided those arguments are [prefixed](#prefixing) with the name of a spec followed by two underscores ("`__`"). These arguments are interpreted as metadata-on-metadata, and are routed to the declaring spec for interpretation
-- **Enums** defined in specs may include values of any name. The space of **unprefixed** names belongs to the document. The space of **prefixed** names belongs to the spec with that prefix, and may be used to pass data between specs.
-- **Input Objects** may be defined with additional fields, provided those fields are [prefixed](#prefixing) with the name of a spec followed by two underscores
+- **Directives** may be defined as taking additional arguments, provided those arguments are [prefixed](#prefixing) with the name of a document feature followed by two underscores ("`__`"). These arguments are interpreted as metadata-on-metadata, and are routed to the declaring spec for interpretation
+- **Enums** defined in features may include values of any name. For extensible enums, the space of **unprefixed** names belongs to the document. The space of **prefixed** names belongs to the spec with that prefix, and may be used to pass data between specs.
+- **Input Objects** may be defined with additional fields, provided those fields are [prefixed](#prefixing) with the name of a feature followed by two underscores.
 
 ## Processing Schemas
 
