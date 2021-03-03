@@ -178,6 +178,12 @@ Documents **must** include a definition for the `@core` directive. The provided 
 - **Omit locations** where the directive never occurs,
 - **Introduce new directive locations**, the behavior of which is unspecified here.
 - **Introduce new arguments.** New arguments **must** be prefixed, e.g. `example__extensionArgument: Bool`. The prefix **must** be the name of a feature referenced with this or another `@core` directive within the document.
+- **Use `String` in place of custom scalars.** This is an ease-of-authoring affordance which allows document authors to omit the definitions of custom scalar types provided by features. Processors **must** continue to interpret such arguments and fields according to the encoding and decoding rules of the custom scalar type. For example, the `@core` directive may be defined as follows, with no change to the behavior:
+
+```graphql
+#::[The `@core` directive, specified with `feature: String`]
+directive @core(feature: String)
+```
 
 ### `feature: `[core__FeatureUrl](#core__featureurl)
 
@@ -283,7 +289,7 @@ There are, however, requirements on the structure of the URL itself:
   </code>
 </figure>
 
-The final two segments of the URL's [path](https://tools.ietf.org/html/rfc3986#section-3.3) **should** contain the feature's [default prefix](#prefix) and a [version tag](#versioning). The content of the URL up to and including the prefix—but excluding the version tag and trailing `/`—is the feature's *identity*. For the above example,
+The final two segments of the URL's [path](https://tools.ietf.org/html/rfc3986#section-3.3) **must** contain the feature's [default prefix](#prefix) and a [version tag](#versioning). The content of the URL up to and including the prefix—but excluding the version tag and trailing `/`—is the feature's *identity*. For the above example,
 <dl>
   <dt markdown>`identity: "https://spec.example.com/a/b/c/exampleFeature"`</dt>
   <dd>A global identifier for the feature. Processors can treat this as an opaque string identifying the feature (but not the version of the feature) for purposes of selecting an appropriate implementation.</dd>
@@ -346,13 +352,13 @@ directive @example(data: example__Data) on FIELD
 
 The prefix **should not** be elided within documentation; definitions of schema elements provided within the spec **must** include the default prefix.
 
-### Elements which should be prefixed
+### Elements which must be prefixed
 
 Feature specs **must** prefix the following schema elements:
 - the names of any object types, interfaces, unions, enums, or input object types defined by the feature
 - the names of any fields the spec introduces on *foreign types* defined in a different feature
 - the names of any arguments the spec introduces on *foreign directives and fields* defined by a different feature
-- the names of any directives introduced in the spec, with the exception of the *root directive*, which must have the same name as the feature 
+- the names of any directives introduced in the spec, with the exception of the *root directive*, which must have the same name as the feature
 
 <view-of src=prefixing.graphql
   title='Prefixing examples'
