@@ -69,7 +69,7 @@ The broad intention behind core schemas is to provide a *single document* which 
 ### Parts of a Core Schema
 
 When talking about a core schema, we can broadly break it into two pieces:
-- an **export schena** (or **API**) consisting of exported schema elements (objects, interfaces, enums, directives, etc.) which **should** be served to clients, and
+- an **export schema** (or **API**) consisting of exported schema elements (objects, interfaces, enums, directives, etc.) which **should** be served to clients, and
 - **machinery** consisting of directives and associated input types (such as enums and input objects). Machinery **must not** be served to clients.
 
 This reflects how core schemas are used: a core schema contains a GraphQL interface (the *API*) along with metadata about how to implement that interface (the *machinery*). Exposing the machinery to clients is unnecessary, and may in some cases constitute a security issue (for example, the machinery for a public-facing graph router will likely reference internal services, possibly exposing network internals which should not be visible to the general public).
@@ -77,12 +77,12 @@ This reflects how core schemas are used: a core schema contains a GraphQL interf
 A key feature of core schemas is that it is always possible to derive the export schema from a core schema document without any knowledge of the features used by the document (with the exception of the `core` feature itself).
 
 Approximately, the process is:
-  - Any elements named `something__likeThis` are *not exported*
-    - &#8230;unless the feature which provides them ("`something`") has `export: true` on its `@core(feature:)` declaration.
-    - &#8230;**or** unless they are annotated with `@core__export` (or explicitly, `@core__export(isExport: true)`).
-  - Any elements named `normalNames` are *exported*
-    - &#8230; unless the element is annotated with `@core__export(isExport: false)`
-    - &#8230; unless the element is a directive or directive definition whose name matches the name of a feature, in which case, it is exported only if the entire feature is exported (having been brought in with `@core(feature:, export: true)`).
+  - Any elements named `something__likeThis` are **not exported**, unless&#8230;
+    - &#8230;the feature which provides them ("`something`") has `export: true` on its `@core(feature:)` declaration, *or*
+    - &#8230;they are annotated with `@core__export` (or explicitly, `@core__export(isExport: true)`).
+  - Any elements with `normalNames` are **exported**, unless&#8230;
+    - &#8230;the element is annotated with `@core__export(isExport: false)`
+    - &#8230;the element is a directive or directive definition whose name matches the name of a feature, in which case, it is exported only if the entire feature is exported (having been brought in with `@core(feature:, export: true)`).
 
 A formal description is provided by the [is exported](#is-exported) algorithm.
 
@@ -145,10 +145,10 @@ directive @another on FIELD
 
 ### Renaming `@core` itself
 
-It is possible to rename the `@core` directive itself with the same `as` mechanism used for all specs:
+It is possible to rename the `@core` directive itself with the same `as:` mechanism used for all features:
 
 ```graphql
-#::[Renaming `@core`]
+#::[Renaming `@core` to `@coreSchema`]
 schema
   @coreSchema(feature: "https://lib.apollo.dev/core/v0.1", as: "coreSchema")
   @coreSchema(feature: "https://example.com/example/v1.0")
@@ -181,7 +181,7 @@ Documents **must** include a definition for the `@core` directive. The provided 
 - **Use `String` in place of custom scalars.** This is an ease-of-authoring affordance which allows document authors to omit the definitions of custom scalar types provided by features. Processors **must** continue to interpret such arguments and fields according to the encoding and decoding rules of the custom scalar type. For example, the `@core` directive may be defined as follows, with no change to the behavior:
 
 ```graphql
-#::[The `@core` directive, specified with `feature: String`]
+#::[The `@core` directive, defined with `feature: String`]
 directive @core(feature: String)
 ```
 
@@ -204,12 +204,12 @@ Feature URLs contain information about the spec's [prefix](#prefixing) and [vers
 
 ### `as: String`
 
-Change the [names](#prefixing) of directives and schema elements from this specification. The specified string **must** be a valid GraphQL identifier and **must** not contain the namespace separator (two underscores, `__`).
+Change the [names](#prefixing) of directives and schema elements from this specification. The specified string **must** be a valid GraphQL identifier and **must not** contain the namespace separator (two underscores, `__`).
 
 When `as:` is provided, processors **must** replace the default name prefix on the names of all [prefixed schema elements](#elements-which-should-be-prefixed) with the specified name.
 
 ```graphql
-#::[Using the `@core` directive with a custom name]
+#::[Using `@core(feature:, as:)` to use a feature with a custom name]
 schema
   @core(feature: "https://spec.example.com/core/v1.0")
   @core(feature: "https://spec.example.com/example/v1.0", as: "eg")
@@ -272,7 +272,7 @@ Feature URLs serve two main purposes:
   - Directing human readers to documentation about the feature
   - Providing tools with information about the specs in use, along with enough information to select and invoke an implementation
   
-Feature URLs **should** be [RFC 3986 URLs](https://tools.ietf.org/html/rfc3986). When viewed, the URL **should** provide the content of the selected version of the specification in some human-readable form; a human reader should be able to click the link and go to the correct version of the docs.
+Feature URLs **should** be [RFC 3986 URLs](https://tools.ietf.org/html/rfc3986). When viewed, the URL **should** provide the specification of the selected version of the feature in some human-readable form; a human reader should be able to click the link and go to the correct version of the docs.
 
 Although they are not prohibited from doing so, it's assumed that processors will not load the content of feature URLs. Published specifications are not required to be machine-readable, and [this spec](.) places no requirements on the structure or syntax of the content to be found there.
 
@@ -318,18 +318,18 @@ When extracting the URL's `name` and `version`, processors **must** ignore any u
 
 ### Why is versioning in the URL, not a directive argument?
 
-The version is in the URL because when a human reader visits the URL, we would like them to be taken to the documentation for the *version of the specification in use by this document*. Many text editors will turn URLs into hyperlinks, and it's highly desirable that clicking the link takes the user to the correct version of the docs. Putting the version information in a separate argument to the `@core` directive would require this.
+The version is in the URL because when a human reader visits the URL, we would like them to be taken to the documentation for the *version of the feature used by this document*. Many text editors will turn URLs into hyperlinks, and it's highly desirable that clicking the link takes the user to the correct version of the docs. Putting the version information in a separate argument to the `@core` directive would prevent this.
 
 ## Prefixing
 
 With the exception of a single root directive, core feature specifications **must** prefix all schema elements they introduce. The prefix:
 1. **must** match the default name of the feature as derived from the feature's specification URL,
 1. **must** be a string of characters valid within GraphQL names, and
-2. **must** not contain the core namespace separator, which is two underscores (`"__"`).
+2. **must not** contain the core namespace separator, which is two underscores (`"__"`).
 
 Prefixed names consist of the name of the feature, followed by two underscores, followed by the name of the element (which can be any valid GraphQL identifier). For instance, the `core` specification (which you are currently reading) introduces elements named [`core__FeatureUrl`](#core__featureurl) and `core__export`(#core__export).
 
-A feature's *root directive* is an exception to the prefixing requirements. Feature specifications **may** introduce a single directive which carries only the name of the feature, with no prefix required. For example, the `core` specification introduces a `@core` directive, which is named after the feature and therefore requires no prefix.
+A feature's *root directive* is an exception to the prefixing requirements. Feature specifications **may** introduce a single directive which carries only the name of the feature, with no prefix required. For example, the `core` specification introduces a `@core` directive. This directive has the same name as the feature ("`core`"), and so requires no prefix.
 
 ```graphql
 #::[Using the `@core` directive with a spec's default name]
@@ -350,7 +350,7 @@ enum example__Data {
 directive @example(data: example__Data) on FIELD
 ```
 
-The prefix **should not** be elided within documentation; definitions of schema elements provided within the spec **must** include the default prefix.
+The prefix **must not** be elided within documentation; definitions of schema elements provided within the spec **must** include the default prefix.
 
 ### Elements which must be prefixed
 
@@ -478,7 +478,7 @@ An exception to this is processors which prepare the schema for final public con
 
 ### Bootstrapping *validates* Has Core Feature
 
-Determine the name of the core specification within the document *or* fail the *HasCoreFeature* validation.
+Determine the name of the core specification within the document *or* fail the *Has Core Feature* validation.
 
 It is possible to [rename the core feature](#renaming-core-itself) within a document. This process determines the actual name for the core feature if one is present.
 
@@ -552,7 +552,7 @@ Create a map of `element: Any Named Element -> featureName: String | null`, asso
 
 ### Is Exported?
 
-Determine if any schema element is [exported](#the-export-schema). A core schema Document's [API](#the-export-schema) is the subset of the entire Document with all non-exported elements removed.
+Determine if any schema element is [exported](#the-export-schema). A core schema Document's [API](#the-export-schema) is the subset of the entire Document containing only exported elements.
 
 **Formal Specification**
 - Given [`assignments`](#assign-namespaces)
