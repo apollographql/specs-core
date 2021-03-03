@@ -186,7 +186,7 @@ Feature URLs contain information about the spec's [prefix](#prefixing) and [vers
 
 Change the [names](#prefixing) of directives and schema elements from this specification. The specified string **must** be a valid GraphQL identifier and **must** not contain the namespace separator (two underscores, `__`).
 
-When a `as` is provided, processors **must** configure the resulting implementation to replace the default name prefix on the names of all [prefixed schema elements](#elements-which-should-be-prefixed) with the specified name.
+When `as:` is provided, processors **must** replace the default name prefix on the names of all [prefixed schema elements](#elements-which-should-be-prefixed) with the specified name.
 
 ```graphql
 #::[Using the `@core` directive with a custom name]
@@ -543,7 +543,7 @@ Create a map of `element: Any Named Element -> featureName: String | null`, asso
     - Insert `e => null` into `assignments`
     - **Continue to next `e`**
   - If `e`'s name contains the substring `"__"`,
-    - Partition `e`'s name by `"__"` into `[prefix, base]` (that is, find the shortest `prefix` and longest `base` such that `e`'s name `= prefix + "__" + base`)
+    - Partition `e`'s name into `[prefix, base]` at the first `"__"` (that is, find the shortest `prefix` and longest `base` such that `e`'s name `= prefix + "__" + base`)
     - If `prefix` exists within `namespaces`, insert `e => namespaces[prefix]` into `assignments`
       - Else, insert `e => null` into `assignments`
     - **Continue to next `e`**
@@ -558,14 +558,14 @@ Determine if any schema element is [exported](#the-export-schema). A core schema
 - Given [`assignments`](#assign-namespaces)
 - Given [`coreName`](#bootstrapping-validates-has-core-feature)
 - Given some schema element `e` within the Document,
-  - For each Directive `d` on `e` (if any),
+  - For each Directive `d` (if any) on `e`,
     - If `d`'s name is *coreName*`__export`,
-      - If `d` does not contain an `isExport:` argument *or* `isExport:` is `true`, **Return `true`**
-      - If `d` contains an `isExport:` argument which is equal to `false`, **Return `false`**
+      - If `d` does not have an `isExport:` argument *or* `isExport:` is `true`, **Return `true`**
+      - If `d` has an `isExport:` argument whose value is `false`, **Return `false`**
   - If `assignments[e]` is `null`, **Return `true`**
   - Let `f` be the directive referenced from `assignments[e]`
   - If `f` has a `export:` argument whose value is `true`, **Return `true`**
-  - Otherwise, **Return `false`**
+  - Else, **Return `false`**
 
 </main>
 </div>
