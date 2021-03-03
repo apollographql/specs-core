@@ -72,6 +72,20 @@ When talking about a core schema, we can broadly break it into two pieces:
 - an **export schena** (or **API**) consisting of exported schema elements (objects, interfaces, enums, directives, etc.) which **should** be served to clients, and
 - **machinery** consisting of directives and associated input types (such as enums and input objects). Machinery **must not** be served to clients.
 
+This reflects how core schemas are used: a core schema contains a GraphQL interface (the *API*) along with metadata about how to implement that interface (the *machinery*). Exposing the machinery to clients is unnecessary, and may in some cases constitute a security issue (for example, the machinery for a public-facing graph router will likely reference internal services, possibly exposing network internals which should not be visible to the general public).
+
+A key feature of core schemas is that it is always possible to derive the export schema from a core schema document without any knowledge of the features used by the document (with the exception of the `core` feature itself).
+
+Approximately, the process is:
+  - Any elements named `something__likeThis` are *not exported*
+    - &#8230;unless the feature which provides them ("`something`") has `export: true` on its `@core(feature:)` declaration.
+    - &#8230;**or** unless they are annotated with `@core__export` (or explicitly, `@core__export(isExport: true)`).
+  - Any elements named `normalNames` are *exported*
+    - &#8230; unless the element is annotated with `@core__export(isExport: false)`
+    - &#8230; unless the element is a directive or directive definition whose name matches the name of a feature, in which case, it is exported only if the entire feature is exported (having been brought in with `@core(feature:, export: true)`).
+
+A formal description is provided by the [is exported](#is-exported) algorithm.
+
 ## Roles
 
 ```mermaid
@@ -299,26 +313,6 @@ When extracting the URL's `name` and `version`, processors **must** ignore any u
 ### Why is versioning in the URL, not a directive argument?
 
 The version is in the URL because when a human reader visits the URL, we would like them to be taken to the documentation for the *version of the specification in use by this document*. Many text editors will turn URLs into hyperlinks, and it's highly desirable that clicking the link takes the user to the correct version of the docs. Putting the version information in a separate argument to the `@core` directive would require this.
-
-## The Export Schema
-
-Core schemas can be separated into two parts:
-- an **export schema** (or **API**) consisting of exported schema elements (objects, interfaces, enums, directives, etc.) which **should** be served to clients, and
-- **machinery** consisting of directives and associated input types (such as enums and input objects). Machinery **must not** be served to clients.
-
-This reflects how core schemas are used: a core schema contains a GraphQL interface (the *API*) along with metadata about how to implement that interface (the *machinery*). Exposing the machinery to clients is unnecessary, and may in some cases constitute a security issue (for example, the machinery for a public-facing graph router will likely reference internal services, possibly exposing network internals which should not be visible to the general public).
-
-A key feature of core schemas is that it is always possible to derive the export schema from a core schema document without any knowledge of the features used by the document (with the exception of the `core` feature itself).
-
-Approximately, the process is:
-  - Any elements named `something__likeThis` are *not exported*
-    - &#8230;unless the feature which provides them ("`something`") has `export: true` on its `@core(feature:)` declaration.
-    - &#8230;**or** unless they are annotated with `@core__export` (or explicitly, `@core__export(isExport: true)`).
-  - Any elements named `normalNames` are *exported*
-    - &#8230; unless the element is annotated with `@core__export(isExport: false)`
-    - &#8230; unless the element is a directive or directive definition whose name matches the name of a feature, in which case, it is exported only if the entire feature is exported (having been brought in with `@core(feature:, export: true)`).
-
-A formal description is provided by the [is exported](#is-exported) algorithm.
 
 ## Prefixing
 
