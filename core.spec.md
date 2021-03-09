@@ -473,11 +473,11 @@ Different specs with the same prefix are also invalid:
 
 ## Assign Namespaces
 
-Create a map of {element}: *Any Named Element* -> {featureName}: `String` | {null}, associating every named schema element within the document with the name of a feature, or {null} if it is not associated with a feature.
+Create a map of {element}: *Any Named Element* -> {feature}: `Directive` | {null}, associating every named schema element within the document with a feature directive, or {null} if it is not associated with a feature.
 
 AssignNamespaces(document) :
   - Let {namespaces} be the result of collecting namespaces via {CollectNamespaces(document)}
-  - Let {assignments} be a map of ({element}: *Any Named Element*) -> {featureName}: `String` | {null}, initally empty
+  - Let {assignments} be a map of ({element}: *Any Named Element*) -> {feature}: `Directive` | {null}, initally empty
   - For each named schema element {e} within the {document}
     - Let {name} be the name of the {e}
     - If {name} begins with {"__"},
