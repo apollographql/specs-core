@@ -52,12 +52,12 @@ The broad intention behind core schemas is to provide a *single document* which 
 ## Parts of a Core Schema
 
 When talking about a core schema, we can broadly break it into two pieces:
-- an **export schema** (or **API**) consisting of exported schema elements (objects, interfaces, enums, directives, etc.) which **should** be served to clients, and
-- **machinery** consisting of directives and associated input types (such as enums and input objects). Machinery **must not** be served to clients.
+- an **API** consisting of exported schema elements (objects, interfaces, enums, directives, etc.) which **should** be served to clients, and
+- **machinery** containing document metadata. This typically consists of directives and associated input types (such as enums and input objects), but may include any schema element. Machinery **must not** be served to clients. Specifically, machinery **must not** be included in introspection responses or used to validate or execute queries.
 
 This reflects how core schemas are used: a core schema contains a GraphQL interface (the *API*) along with metadata about how to implement that interface (the *machinery*). Exposing the machinery to clients is unnecessary, and may in some cases constitute a security issue (for example, the machinery for a public-facing graph router will likely reference internal services, possibly exposing network internals which should not be visible to the general public).
 
-A key feature of core schemas is that it is always possible to derive the export schema from a core schema document without any knowledge of the features used by the document (with the exception of the `core` feature itself).
+A key feature of core schemas is that it is always possible to derive a core schema's API without any knowledge of the features used by the document (with the exception of the `core` feature itself).
 
 Approximately, the process is:
   - Any elements named `something__likeThis` are **not exported**, unless&#8230;
@@ -90,7 +90,7 @@ graph TB
 - **Authors (either human or machine)** write an initial core schema as specified in this document, including versioned `@core` requests for all directives they use
 - **Machine processors** can process core schemas and output new core schemas. The versioning of directives and associated schema elements provided by the `@core` allows processors to operate on directives they understand and pass through directives they do not.
 - **Human readers** can examine the core schema at various stages of processing. At any stage, they can examine the `@core` directives and follow URLs to the specification, receiving an explanation of the requirements of the specification and what new directives, types, and other schema objects are available within the document.
-- **Data cores** can then pick up the processed core schema and provide some data-layer service with it. Typically this means serving the export schema as a GraphQL endpoint, using metadata defined by machinery to inform how it processes operations it receives. However, data cores may perform other tasks described in the core schema, such as routing to backend services, caching commonly-accessed fields and queries, and so on. The term "data core" is intended to capture this multiplicity of possible activities.
+- **Data cores** can then pick up the processed core schema and provide some data-layer service with it. Typically this means serving the schema's API as a GraphQL endpoint, using metadata defined by machinery to inform how it processes operations it receives. However, data cores may perform other tasks described in the core schema, such as routing to backend services, caching commonly-accessed fields and queries, and so on. The term "data core" is intended to capture this multiplicity of possible activities.
 
 # The Basics
 
@@ -120,7 +120,7 @@ type SomeType {
 
 # `@another` is unspecified. Core processors will not extract metadata from
 # it, but its definition and all usages within the schema will be exposed
-# in the export schema.
+# in the API.
 directive @another on FIELD
 ```
 
@@ -212,7 +212,7 @@ directive @eg(data: eg__Data) on FIELD
 
 ##! @core__export
 
-Control the export of individual schema elements.
+Specify whether the annotated element is exported to the API.
 
 ```graphql definition
 directive @core__export(isExport: Boolean = true)
@@ -229,11 +229,11 @@ directive @core__export(isExport: Boolean = true)
   | INPUT_FIELD_DEFINITION
 ```
 
-`@core__export` can occur at any type system location. Elements with `@core__export` will always be included in the export schema. Elements with `@core__export(isExport: false)` will always be excluded from the export schema.
+`@core__export` can occur at any type system location. Elements with `@core__export` will always be included in the API. Elements with `@core__export(isExport: false)` will always be excluded from the API.
 
 ###! isExport: Boolean
 
-If true, the element is always exported, regardless of whether the feature which defines it is exported. If false, the element is never exported. 
+If true, the element is always exported, regardless of whether the feature which defines it is exported. If false, the element is never exported.
 
 # Scalars
 
