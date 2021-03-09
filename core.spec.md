@@ -176,11 +176,11 @@ Feature URLs contain information about the spec's [prefix](#sec-Prefixing) and [
 
 ###! as: String
 
-Change the [names](#sec-Prefixing) of directives and schema elements from this specification. The specified string **must** be a valid GraphQL identifier and **must not** contain the namespace separator (two underscores, `__`).
+Change the [names](#sec-Prefixing) of directives and schema elements from this specification. The specified string **must** be a valid GraphQL identifier and **must not** contain the namespace separator (two underscores, {"__"}).
 
 When `as:` is provided, processors **must** replace the default name prefix on the names of all [prefixed schema elements](#sec-Elements-which-must-be-prefixed) with the specified name.
 
-```graphql example -- Using @core(feature:, as:) to use a feature with a custom name
+```graphql example -- Using {@core}`(feature:, as:)` to use a feature with a custom name
 schema
   @core(feature: "https://spec.example.com/core/v1.0")
   @core(feature: "https://spec.example.com/example/v1.0", as: "eg")
