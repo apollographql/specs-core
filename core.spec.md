@@ -16,7 +16,7 @@
 
 [GraphQL](https://spec.graphql.org/) provides directives as a means of attaching user-defined metadata to a GraphQL document. Directives are highly flexible, and can be used to suggest behavior and define features of a graph which are not otherwise evident in the schema.
 
-Alas, *GraphQL does not provide a mechanism to globally identify or version directives*. Given a particular directive—e.g. `@external`—processors are expected to know how to interpret the directive based only on its name, definition within the document, and additional configuration from outside the document. This means that programs interpreting these directives have two options:
+Alas, *GraphQL does not provide a mechanism to globally identify or version directives*. Given a particular directive—e.g. `@join`—processors are expected to know how to interpret the directive based only on its name, definition within the document, and additional configuration from outside the document. This means that programs interpreting these directives have two options:
 
   1. rely on a hardcoded interpretation for directives with certain signatures, or
   2. accept additional configuration about how to interpret directives in the schema.
@@ -215,7 +215,7 @@ directive @eg(data: eg__Data) on FIELD
 Specify whether the annotated element is exported to the API.
 
 ```graphql definition
-directive @core__export(isExport: Boolean = true)
+directive @core__export(isExport: Boolean! = true)
   repeatable on
   | SCALAR
   | OBJECT
@@ -441,11 +441,11 @@ Bootstrap(document) :
     - *then* **Return** `coreName` = {d}'s name
 - If no matching directive was found, the ***Has Core Feature* validation fails**.
 
-## Namespace Collection (validates Name Uniqueness)
+## Feature Collection (validates Name Uniqueness)
 
 Collect a map of ({featureName}: `String`) -> `Directive`, where `Directive` is a {@core} Directive which introduces the feature named {featureName} into the document.
 
-CollectNamespaces(document) :
+CollectFeatures(document) :
   - Let {coreName} be the name of the core feature found via {Bootstrap(document)}
   - Let {namespaces} be a map of {featureName}: `String` -> `Directive`, initially empty.
   - For each directive {d} named `coreName` on the SchemaDefinition within {document},
@@ -471,12 +471,12 @@ Different specs with the same prefix are also invalid:
 
 ===[Different specs with non-unique prefixes](prefix-uniqueness.graphql#schema[2]) counter-example
 
-## Assign Namespaces
+## Assign Features
 
 Create a map of {element}: *Any Named Element* -> {feature}: `Directive` | {null}, associating every named schema element within the document with a feature directive, or {null} if it is not associated with a feature.
 
-AssignNamespaces(document) :
-  - Let {namespaces} be the result of collecting namespaces via {CollectNamespaces(document)}
+AssignFeatures(document) :
+  - Let {namespaces} be the result of collecting namespaces via {CollectFeatures(document)}
   - Let {assignments} be a map of ({element}: *Any Named Element*) -> {feature}: `Directive` | {null}, initally empty
   - For each named schema element {e} within the {document}
     - Let {name} be the name of the {e}
@@ -493,11 +493,11 @@ AssignNamespaces(document) :
 
 ## Is Exported?
 
-Determine if any schema element is [exported](#sec-Parts-of-a-Core-Schema). A core schema Document's [API](#sec-Parts-of-a-Core-Schema) is the subset of the entire Document containing only exported elements.
+Determine if any schema element is [exported](#sec-Parts-of-a-Core-Schema) to the API. A core schema's [API](#sec-Parts-of-a-Core-Schema) is always the subset of the entire Document containing only exported elements.
 
 IsExported(element) :
 - Let {coreName} be the name of the core feature found via {Bootstrap(document)}
-- Let {assignments} be the result of assigning namespaces via {AssignNamespaces(document)}
+- Let {assignments} be the result of assigning features to elements via {AssignFeatures(document)}
 - For each Directive {d} on {element},
   - If {d}'s name is {coreName}`__export`,
     - If {d} does not have an `isExport:` argument *or* `isExport:` is {true}, **Return** {true}
