@@ -147,16 +147,15 @@ directive @example on FIELD
 
 ##! @core
 
+Declare a core feature present in this schema.
+
 ```graphql definition
 directive @core(
   feature: core__FeatureUrl!,
   as: String,
   export: Boolean)
-  repeatable
-  | on SCHEMA
+  repeatable on SCHEMA
 ```
-
-Declare a core feature present in this schema.
 
 Documents **must** include a definition for the {@core} directive. The provided definition must be *compatible* with the definition above, but may:
 - **Omit optional arguments** if they are never used in the document,
@@ -229,7 +228,7 @@ directive @core__export(isExport: Boolean! = true)
   | INPUT_FIELD_DEFINITION
 ```
 
-`@core__export` can occur at any type system location. Elements with `@core__export` will always be included in the API. Elements with `@core__export(isExport: false)` will always be excluded from the API.
+{@core__export} can occur at any type system location. Elements with {@core__export} will always be included in the API. Elements with {@core__export}`(isExport: false)` will always be excluded from the API.
 
 ###! isExport: Boolean
 
