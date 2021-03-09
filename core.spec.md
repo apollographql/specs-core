@@ -87,9 +87,9 @@ graph TB
   final-->reader
 ```
 
-- **Authors (either human or machine)** write an initial core schema as specified in this document, including versioned `@core` requests for all directives they use
-- **Machine processors** can process core schemas and output new core schemas. The versioning of directives and associated schema elements provided by the `@core` allows processors to operate on directives they understand and pass through directives they do not.
-- **Human readers** can examine the core schema at various stages of processing. At any stage, they can examine the `@core` directives and follow URLs to the specification, receiving an explanation of the requirements of the specification and what new directives, types, and other schema objects are available within the document.
+- **Authors (either human or machine)** write an initial core schema as specified in this document, including versioned {@core} requests for all directives they use
+- **Machine processors** can process core schemas and output new core schemas. The versioning of directives and associated schema elements provided by the {@core} allows processors to operate on directives they understand and pass through directives they do not.
+- **Human readers** can examine the core schema at various stages of processing. At any stage, they can examine the {@core} directives and follow URLs to the specification, receiving an explanation of the requirements of the specification and what new directives, types, and other schema objects are available within the document.
 - **Data cores** can then pick up the processed core schema and provide some data-layer service with it. Typically this means serving the schema's API as a GraphQL endpoint, using metadata defined by machinery to inform how it processes operations it receives. However, data cores may perform other tasks described in the core schema, such as routing to backend services, caching commonly-accessed fields and queries, and so on. The term "data core" is intended to capture this multiplicity of possible activities.
 
 # The Basics
@@ -161,7 +161,7 @@ Documents **must** include a definition for the {@core} directive. The provided 
 - **Omit optional arguments** if they are never used in the document,
 - **Omit locations** where the directive never occurs,
 - **Introduce new directive locations**, the behavior of which is unspecified here.
-- **Introduce new arguments.** New arguments **must** be prefixed, e.g. `example__extensionArgument: Bool`. The prefix **must** be the name of a feature referenced with this or another `@core` directive within the document.
+- **Introduce new arguments.** New arguments **must** be prefixed, e.g. `example__extensionArgument: Bool`. The prefix **must** be the name of a feature referenced with this or another {@core} directive within the document.
 - **Use `String` in place of custom scalars.** This is an ease-of-authoring affordance which allows document authors to omit the definitions of custom scalar types provided by features. Processors **must** continue to interpret such arguments and fields according to the encoding and decoding rules of the custom scalar type. For example, {@core} may be defined as follows, with no change to the behavior:
 
 ```graphql example -- {@core} definition taking a String feature
@@ -283,7 +283,7 @@ When extracting the URL's `name` and `version`, processors **must** ignore any u
 
 ### Why is versioning in the URL, not a directive argument?
 
-The version is in the URL because when a human reader visits the URL, we would like them to be taken to the documentation for the *version of the feature used by this document*. Many text editors will turn URLs into hyperlinks, and it's highly desirable that clicking the link takes the user to the correct version of the docs. Putting the version information in a separate argument to the `@core` directive would prevent this.
+The version is in the URL because when a human reader visits the URL, we would like them to be taken to the documentation for the *version of the feature used by this document*. Many text editors will turn URLs into hyperlinks, and it's highly desirable that clicking the link takes the user to the correct version of the docs. Putting the version information in a separate argument to the {@core} directive would prevent this.
 
 # Prefixing
 
@@ -294,7 +294,7 @@ With the exception of a single root directive, core feature specifications **mus
 
 Prefixed names consist of the name of the feature, followed by two underscores, followed by the name of the element (which can be any valid GraphQL identifier). For instance, the `core` specification (which you are currently reading) introduces elements named [{core__FeatureUrl}](#core__FeatureUrl) and [{@core__export}](#@core__export).
 
-A feature's *root directive* is an exception to the prefixing requirements. Feature specifications **may** introduce a single directive which carries only the name of the feature, with no prefix required. For example, the `core` specification introduces a `@core` directive. This directive has the same name as the feature ("`core`"), and so requires no prefix.
+A feature's *root directive* is an exception to the prefixing requirements. Feature specifications **may** introduce a single directive which carries only the name of the feature, with no prefix required. For example, the `core` specification introduces a {@core} directive. This directive has the same name as the feature ("`core`"), and so requires no prefix.
 
 ```graphql example -- Using the @core directive with a spec's default name
 schema @core(feature: "https://spec.example.com/example/v1.0") {
@@ -419,7 +419,7 @@ A common use case is that of a processor which consumes a valid input schema and
 The general guidance for processor behavior is: don't react to what you don't understand.
 
 Specifically, processors:
-  - **should** pass through `@core` directives which reference unknown feature URLs
+  - **should** pass through {@core} directives which reference unknown feature URLs
   - **should** pass through prefixed directives, types, and other schema elements  
 
 An exception to this is processors which prepare the schema for final public consumption. Such processors **may** choose to eliminate all unknown directives and prefixed types in order to hide schema implementation details within the published schema. This will impair the operation of tooling which relies on these directives—such tools will not be able to run on the output schema, so the benefits and costs of this kind of information hiding should be weighed carefully on a case-by-case basis.
