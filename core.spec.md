@@ -447,12 +447,12 @@ Collect a map of ({featureName}: `String`) -> `Directive`, where `Directive` is 
 
 CollectFeatures(document) :
   - Let {coreName} be the name of the core feature found via {Bootstrap(document)}
-  - Let {namespaces} be a map of {featureName}: `String` -> `Directive`, initially empty.
+  - Let {features} be a map of {featureName}: `String` -> `Directive`, initially empty.
   - For each directive {d} named `coreName` on the SchemaDefinition within {document},
     - Let {name} be the spec's [name](#sec-Prefixing) as specified by the directive's `as:` argument or, if the argument is not present, the default name from the [feature url](#core__FeatureUrl).
-    - If {name} exists within {namespaces}, the ***Name Uniqueness* validation fails**.
-    - Insert {name} => {d} into {namespaces}
-  - **Return** {namespaces}
+    - If {name} exists within {features}, the ***Name Uniqueness* validation fails**.
+    - Insert {name} => {d} into {features}
+  - **Return** {features}
 
 
 Prefixes, whether implicit or explicit, must be unique within a document. Valid:
@@ -476,7 +476,7 @@ Different specs with the same prefix are also invalid:
 Create a map of {element}: *Any Named Element* -> {feature}: `Directive` | {null}, associating every named schema element within the document with a feature directive, or {null} if it is not associated with a feature.
 
 AssignFeatures(document) :
-  - Let {namespaces} be the result of collecting namespaces via {CollectFeatures(document)}
+  - Let {features} be the result of collecting features via {CollectFeatures(document)}
   - Let {assignments} be a map of ({element}: *Any Named Element*) -> {feature}: `Directive` | {null}, initally empty
   - For each named schema element {e} within the {document}
     - Let {name} be the name of the {e}
@@ -485,7 +485,7 @@ AssignFeatures(document) :
       - **Continue** to next {e}
     - If {name} contains the substring {"__"},
       - Partition {name} into `[`{prefix}, {base}`]` at the first {"__"} (that is, find the shortest {prefix} and longest {base} such that {name} = {prefix} + {"__"} + {base})
-      - If {prefix} exists within `namespaces`, insert {e} => {namespaces}`[`{prefix}`]` into {assignments}
+      - If {prefix} exists within {features}, insert {e} => {features}`[`{prefix}`]` into {assignments}
         - Else, insert {e} => {null} into {assignments}
       - **Continue** to next {e}
     - Insert `e => null` into {assignments}
@@ -496,13 +496,13 @@ AssignFeatures(document) :
 Determine if any schema element is [exported](#sec-Parts-of-a-Core-Schema) to the API. A core schema's [API](#sec-Parts-of-a-Core-Schema) is always the subset of the entire Document containing only exported elements.
 
 IsExported(element) :
-- Let {coreName} be the name of the core feature found via {Bootstrap(document)}
-- Let {assignments} be the result of assigning features to elements via {AssignFeatures(document)}
-- For each Directive {d} on {element},
-  - If {d}'s name is {coreName}`__export`,
-    - If {d} does not have an `isExport:` argument *or* `isExport:` is {true}, **Return** {true}
-    - If {d} has an `isExport:` argument whose value is `false`, **Return `false`**
-- If {assignments}`[`{element}`]` is {null}, **Return** {true}
-- Let {feature} be the directive referenced from {assignments}`[`{element}`]`
-- If {feature} has a `export:` argument whose value is {true}, **Return** {true}
-- Else, **Return** {false}
+  - Let {coreName} be the name of the core feature found via {Bootstrap(document)}
+  - Let {assignments} be the result of assigning features to elements via {AssignFeatures(document)}
+  - For each Directive {d} on {element},
+    - If {d}'s name is {coreName}`__export`,
+      - If {d} does not have an `isExport:` argument *or* `isExport:` is {true}, **Return** {true}
+      - If {d} has an `isExport:` argument whose value is `false`, **Return `false`**
+  - If {assignments}`[`{element}`]` is {null}, **Return** {true}
+  - Let {feature} be the directive referenced from {assignments}`[`{element}`]`
+  - If {feature} has a `export:` argument whose value is {true}, **Return** {true}
+  - Else, **Return** {false}
