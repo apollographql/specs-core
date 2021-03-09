@@ -64,7 +64,7 @@ Approximately, the process is:
     - &#8230;the feature which provides them ("`something`") has `export: true` on its `@core(feature:)` declaration, *or*
     - &#8230;they are annotated with {@core__export} (or explicitly, `@core__export(isExport: true)`).
   - Any elements with `normalNames` are **exported**, unless&#8230;
-    - &#8230;the element is annotated with `@core__export(isExport: false)`
+    - &#8230;the element is annotated with `@core__export(isExport: false)`, *or*
     - &#8230;the element is a directive or directive definition whose name matches the name of a feature, in which case, it is exported only if the entire feature is exported (having been brought in with `@core(feature:, export: true)`).
 
 A formal description is provided by the [is exported](#sec-Is-Exported-) algorithm.
