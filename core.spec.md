@@ -62,10 +62,10 @@ A key feature of core schemas is that it is always possible to derive a core sch
 Approximately, the process is:
   - Any elements named `something__likeThis` are **not exported**, unless&#8230;
     - &#8230;the feature which provides them ("`something`") has `export: true` on its `@core(feature:)` declaration, *or*
-    - &#8230;they are annotated with {@core__export} (or explicitly, `@core__export(isExport: true)`).
+    - &#8230;they are annotated with {@core__export} (or explicitly, {@core__export}`(isExport: true)`).
   - Any elements with `normalNames` are **exported**, unless&#8230;
-    - &#8230;the element is annotated with `@core__export(isExport: false)`, *or*
-    - &#8230;the element is a directive or directive definition whose name matches the name of a feature, in which case, it is exported only if the entire feature is exported (having been brought in with `@core(feature:, export: true)`).
+    - &#8230;the element is annotated with {@core__export}`(isExport: false)`, *or*
+    - &#8230;the element is a directive or directive definition whose name matches the name of a feature, in which case, it is exported only if the entire feature is exported (having been brought in with {@core}`(feature:, export: true)`).
 
 A formal description is provided by the [is exported](#sec-Is-Exported-) algorithm.
 
@@ -290,7 +290,7 @@ The version is in the URL because when a human reader visits the URL, we would l
 With the exception of a single root directive, core feature specifications **must** prefix all schema elements they introduce. The prefix:
 1. **must** match the default name of the feature as derived from the feature's specification URL,
 1. **must** be a string of characters valid within GraphQL names, and
-2. **must not** contain the core namespace separator, which is two underscores (`"__"`).
+2. **must not** contain the core namespace separator, which is two underscores ({"__"}).
 
 Prefixed names consist of the name of the feature, followed by two underscores, followed by the name of the element (which can be any valid GraphQL identifier). For instance, the `core` specification (which you are currently reading) introduces elements named [{core__FeatureUrl}](#core__FeatureUrl) and [{@core__export}](#@core__export).
 
@@ -400,7 +400,7 @@ If a processor chooses to activate support for a feature, the processor **must**
 Any directives, scalars, enums, input objects, and other schema elements defined by specs **may** be **extensible**. This means that their definitions within a core schema document do not have to exactly match definitions provided by specs. Instead, definitions should match all usages within the document.
 
 Standard extensibility rules:
-- **Directives** may be defined as taking additional arguments, provided those arguments are [prefixed](#sec-Prefixing) with the name of a document feature followed by two underscores ("`__`"). These arguments are interpreted as metadata-on-metadata, and are routed to the declaring spec for interpretation
+- **Directives** may be defined as taking additional arguments, provided those arguments are [prefixed](#sec-Prefixing) with the name of a document feature followed by two underscores ({"__"}). These arguments are interpreted as metadata-on-metadata, and are routed to the declaring spec for interpretation
 - **Enums** defined in features may include values of any name. For extensible enums, the space of **unprefixed** names belongs to the document. The space of **prefixed** names belongs to the spec with that prefix, and may be used to pass data between specs.
 - **Input Objects** may be defined with additional fields, provided those fields are [prefixed](#sec-Prefixing) with the name of a feature followed by two underscores.
 
