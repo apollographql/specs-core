@@ -54,6 +54,7 @@ directive @B on ENUM_VALUE
 directive @featureA__fieldDirective on FIELD
 
 directive @core(feature: core__FeatureUrl, as: String, export: Boolean)
+  repeatable on SCHEMA
 
 scalar core__FeatureUrl
   @specifiedBy(url: "https://lib.apollo.dev/core/v0.1#core__FeatureUrl")
