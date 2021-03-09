@@ -500,7 +500,7 @@ IsExported(element) :
   - For each Directive {d} on {element},
     - If {d}'s name is {coreName}`__export`,
       - If {d} does not have an `isExport:` argument *or* `isExport:` is {true}, **Return** {true}
-      - If {d} has an `isExport:` argument whose value is `false`, **Return `false`**
+      - If {d} has an `isExport:` argument whose value is {false}, **Return** {false}
   - If {assignments}`[`{element}`]` is {null}, **Return** {true}
   - Let {feature} be the directive referenced from {assignments}`[`{element}`]`
   - If {feature} has a `export:` argument whose value is {true}, **Return** {true}
