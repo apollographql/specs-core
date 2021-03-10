@@ -288,9 +288,9 @@ The version is in the URL because when a human reader visits the URL, we would l
 # Prefixing
 
 With the exception of a single root directive, core feature specifications **must** prefix all schema elements they introduce. The prefix:
-1. **must** match the default name of the feature as derived from the feature's specification URL,
-1. **must** be a string of characters valid within GraphQL names, and
-2. **must not** contain the core namespace separator, which is two underscores ({"__"}).
+  1. **must** match the default name of the feature as derived from the feature's specification URL,
+  2. **must** be a string of characters valid within GraphQL names, and
+  3. **must not** contain the core namespace separator, which is two underscores ({"__"}).
 
 Prefixed names consist of the name of the feature, followed by two underscores, followed by the name of the element (which can be any valid GraphQL identifier). For instance, the `core` specification (which you are currently reading) introduces elements named [{core__FeatureUrl}](#core__FeatureUrl) and [{@core__export}](#@core__export).
 
