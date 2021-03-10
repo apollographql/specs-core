@@ -315,10 +315,10 @@ The prefix MUST NOT be elided within documentation; definitions of schema elemen
 ## Elements which must be prefixed
 
 Feature specs MUST prefix the following schema elements:
-- the names of any object types, interfaces, unions, enums, or input object types defined by the feature
-- the names of any fields the spec introduces on *foreign types* defined in a different feature
-- the names of any arguments the spec introduces on *foreign directives and fields* defined by a different feature
-- the names of any directives introduced in the spec, with the exception of the *root directive*, which must have the same name as the feature
+  - the names of any object types, interfaces, unions, enums, or input object types defined by the feature
+  - the names of any fields the spec introduces on *foreign types* defined in a different feature
+  - the names of any arguments the spec introduces on *foreign directives and fields* defined by a different feature
+  - the names of any directives introduced in the spec, with the exception of the *root directive*, which must have the same name as the feature
 
 :::[example](prefixing.graphql) -- Prefixing
 
