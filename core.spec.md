@@ -156,7 +156,7 @@ directive @core(
 ```
 
 Documents MUST include a definition for the {@core} directive. The provided definition must be *compatible* with the definition above, but may:
-- **Omit optional arguments** if they are never used in the document,
+- **Omit arguments** if they are never used in the document,
 - **Omit locations** where the directive never occurs,
 - **Introduce new arguments.** New arguments MUST be prefixed, e.g. `example__extensionArgument: Bool`. The prefix MUST be the name of a feature referenced with this or another {@core} directive within the document.
 
