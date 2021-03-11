@@ -274,7 +274,7 @@ directive @core__export(export: Boolean! = true)
 
 ###! export: Boolean
 
-If true, the element is always exported, regardless of whether the feature which defines it is exported. If false, the element is never exported.
+If true, the element is always exported, regardless of whether the feature which defines it [is exported](#@core/export). If false, the element is never exported.
 
 # Prefixing
 
