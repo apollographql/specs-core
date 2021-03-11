@@ -5,14 +5,11 @@ schema
   query: Query
 }
 
-type SomeType {
+type Query {
   field: Int @example
 }
 
 directive @example on FIELD
 
-directive @core(feature: core__FeatureUrl, as: String, export: Boolean)
+directive @core(feature: String!)
   repeatable on SCHEMA
-
-scalar core__FeatureUrl
-  @specifiedBy(url: "https://lib.apollo.dev/core/v0.1#core__FeatureUrl")

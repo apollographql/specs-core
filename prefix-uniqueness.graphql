@@ -19,8 +19,5 @@ schema
   query: Query
 }
 
-directive @core(feature: core__FeatureUrl, as: String, export: Boolean)
+directive @core(feature: String!, as: String, export: Boolean)
   repeatable on SCHEMA
-
-scalar core__FeatureUrl
-  @specifiedBy(url: "https://lib.apollo.dev/core/v0.1#core__FeatureUrl")
