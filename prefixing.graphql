@@ -7,7 +7,7 @@ schema
 """
 featureA_SomeType is a type defined by feature A.
 """
-type featureA_SomeType {
+type featureA__SomeType {
   """
   nativeField is a field defined by featureA on a type also defined
   by featureA (namely featureA_SomeType)
@@ -15,10 +15,10 @@ type featureA_SomeType {
   nativeField: Int @featureA__fieldDirective
 
   """
-  B_foreignField is a field defined by featureB on a type defined
-  by featureA (namely featureA_SomeType)
+  B__foreignField is a field defined by featureB on a type defined
+  by featureA (namely featureA__SomeType)
   """
-  B_foreignField: Int
+  B__foreignField: Int
 }
 
 """
@@ -31,15 +31,15 @@ input featureA_SomeInput {
   nativeInputField: Int
 
   """
-  B_field is defined by featureB as a field on featureA_SomeInput
+  B_field is defined by featureB as a field on featureA__SomeInput
   """
-  B_field: String
+  B__field: String
 }
 
 """
 featureA_Items is specified by feature A
 """
-enum featureA_Items { ONE, TWO, THREE @B }
+enum featureA__Items { ONE, TWO, THREE @B }
 
 """
 @B is the root directive defined by featureB

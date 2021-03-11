@@ -1,6 +1,6 @@
 # Core Schemas
 
-<h2>extensible GraphQL schemas for powering data cores</h2>
+<h2>flexible metadata for GraphQL schemas</h2>
 
 ```raw html
 <table class=spec-data>
@@ -37,13 +37,13 @@ A basic core schema:
 :::[example](basic.graphql) -- A basic core schema
 
 **Core schemas** provide a concise mechanism for schema documents to specify the metadata they provide. Metadata is grouped into **features**, which typically define directives and associated types (e.g. scalars and inputs which serve as directive inputs). Additionally, core schemas provide:
-  - [**Flexible namespacing rules.**](#sec-Prefixing) It is always possible to represent any GraphQL schema within a core schema document. Additionally, documents can [choose the names](#@core/as-String) they use for the features they reference, guaranteeing that namespace collisions can always be resolved.
+  - [**Flexible namespacing rules.**](#sec-Prefixing) It is always possible to represent any GraphQL schema within a core schema document. Additionally, documents can [choose the names](#@core/as) they use for the features they reference, guaranteeing that namespace collisions can always be resolved.
   - [**Versioning.**](#sec-Versioning) Feature specifications follow [semver-like semantic versioning principles](#sec-Versioning), which helps schema processors determine if they are able to correctly interpret a document's metadata.
   - [**Standard rules for extensibility**](#sec-Extensibility) of directives and their associated input types. These rules allow specs to annotate each others' metadata, effectively providing "directives on directives," which are otherwise impossible within GraphQL schemas
 
 **Core schemas are not a new language.** All core schema documents are valid GraphQL schema documents. However, this specification introduces new requirements, so not all valid GraphQL schemas are valid core schemas.
 
-The broad intention behind core schemas is to provide a *single document* which provides all the necessary configuration of a *data core*—some program which serves the schema to GraphQL clients, primarily by following directives in order to determine how to resolve queries made against that schema.
+The broad intention behind core schemas is to provide a *single document* which provides all the necessary configuration for programs that process and serve serves the schema to GraphQL clients, primarily by following directives in order to determine how to resolve queries made against that schema.
 
 # Parts of a Core Schema
 
@@ -65,7 +65,7 @@ Approximately, the process is:
 
 A formal description is provided by the [is exported](#sec-Is-Exported-) algorithm.
 
-# Roles
+# Actors
 
 ```mermaid diagram -- Actors who may be interested in the core schemas
 graph TB
@@ -99,7 +99,7 @@ The first {@core} directive on the schema MUST reference the core spec itself, i
 
 :::[example](basic.graphql) -- Basic core schema using {@core} and `@example`
 
-## Unspecified directives are passed through
+## Unspecified directives are passed through by default
 
 Existing schemas likely contain definitions for directives which are not versioned, have no specification document, and are intended mainly to be passed through. This is the default behavior for core schema processors:
 
@@ -156,7 +156,6 @@ directive @core(
 Documents MUST include a definition for the {@core} directive. The provided definition must be *compatible* with the definition above, but may:
 - **Omit optional arguments** if they are never used in the document,
 - **Omit locations** where the directive never occurs,
-- **Introduce new directive locations**, the behavior of which is unspecified here.
 - **Introduce new arguments.** New arguments MUST be prefixed, e.g. `example__extensionArgument: Bool`. The prefix MUST be the name of a feature referenced with this or another {@core} directive within the document.
 - **Use `String` in place of custom scalars.** This is an ease-of-authoring affordance which allows document authors to omit the definitions of custom scalar types provided by features. Processors MUST continue to interpret such arguments and fields according to the encoding and decoding rules of the custom scalar type. For example, {@core} may be defined as follows, with no change to the behavior:
 
@@ -417,8 +416,11 @@ The general guidance for processor behavior is: don't react to what you don't un
 Specifically, processors:
   - SHOULD pass through {@core} directives which reference unknown feature URLs
   - SHOULD pass through prefixed directives, types, and other schema elements  
+  - SHOULD pass through directives which are not [associated with](#AssignFeatures) a {@core} feature
 
-An exception to this is processors which prepare the schema for final public consumption. Such processors MAY choose to eliminate all unknown directives and prefixed types in order to hide schema implementation details within the published schema. This will impair the operation of tooling which relies on these directives—such tools will not be able to run on the output schema, so the benefits and costs of this kind of information hiding should be weighed carefully on a case-by-case basis.
+Processors MAY accept configuration which overrides these default behaviors.
+
+Additionally, processors which prepare the schema for final public consumption MAY choose to eliminate all unknown directives and prefixed types in order to hide schema implementation details within the published schema. This will impair the operation of tooling which relies on these directives—such tools will not be able to run on the output schema, so the benefits and costs of this kind of information hiding should be weighed carefully on a case-by-case basis.
 
 # Validations &amp; Algorithms
 
