@@ -58,9 +58,9 @@ A key feature of core schemas is that it is always possible to derive a core sch
 Approximately, the process is:
   - Any elements named `something__likeThis` are **not exported**, unless&#8230;
     - &#8230;the feature which provides them ("`something`") has `export: true` on its `@core(feature:)` declaration, *or*
-    - &#8230;they are annotated with {@core__export} (or explicitly, {@core__export}`(isExport: true)`).
+    - &#8230;they are annotated with {@core__export} (or explicitly, {@core__export}`(export: true)`).
   - Any elements with `normalNames` are **exported**, unless&#8230;
-    - &#8230;the element is annotated with {@core__export}`(isExport: false)`, *or*
+    - &#8230;the element is annotated with {@core__export}`(export: false)`, *or*
     - &#8230;the element is a directive or directive definition whose name matches the name of a feature, in which case, it is exported only if the entire feature is exported (having been brought in with {@core}`(feature:, export: true)`).
 
 A formal description is provided by the [is exported](#sec-Is-Exported-) algorithm.
@@ -247,7 +247,7 @@ directive @eg(data: eg__Data) on FIELD
 
 Control whether the entire feature is exported to the API.
 
-If {true}, all schema elements--including all directive usages--from this feature will be included in the schema's API *unless* they are annotated with {@core__export}`(isExport: false)`.
+If {true}, all schema elements--including all directive usages--from this feature will be included in the schema's API *unless* they are annotated with {@core__export}`(export: false)`.
 
 If {false} (the default), no schema elements from this feature will be included in the schema's API *unless* they are annotated with {@core__export}.
 
@@ -256,7 +256,7 @@ If {false} (the default), no schema elements from this feature will be included 
 Specify whether the annotated element is exported to the API.
 
 ```graphql definition
-directive @core__export(isExport: Boolean! = true)
+directive @core__export(export: Boolean! = true)
   repeatable on
   | SCALAR
   | OBJECT
@@ -270,9 +270,9 @@ directive @core__export(isExport: Boolean! = true)
   | INPUT_FIELD_DEFINITION
 ```
 
-{@core__export} can occur at any type system location. Elements with {@core__export} will always be included in the API. Elements with {@core__export}`(isExport: false)` will always be excluded from the API.
+{@core__export} can occur at any type system location. Elements with {@core__export} will always be included in the API. Elements with {@core__export}`(export: false)` will always be excluded from the API.
 
-###! isExport: Boolean
+###! export: Boolean
 
 If true, the element is always exported, regardless of whether the feature which defines it is exported. If false, the element is never exported.
 
@@ -493,8 +493,8 @@ IsExported(element) :
   - Let {assignments} be the result of assigning features to elements via {AssignFeatures(document)}
   - For each Directive {d} on {element},
     - If {d}'s name is {coreName}`__export`,
-      - If {d} does not have an `isExport:` argument *or* `isExport:` is {true}, **Return** {true}
-      - If {d} has an `isExport:` argument whose value is {false}, **Return** {false}
+      - If {d} does not have an `export:` argument *or* `export:` is {true}, **Return** {true}
+      - If {d} has an `export:` argument whose value is {false}, **Return** {false}
   - If {assignments}`[`{element}`]` is {null}, **Return** {true}
   - Let {feature} be the directive referenced from {assignments}`[`{element}`]`
   - If {feature} has a `export:` argument whose value is {true}, **Return** {true}
