@@ -136,6 +136,8 @@ type SomeType {
   field: Int @example
 }
 
+directive @coreSchema(feature: String!, as: String)
+  repeatable on SCHEMA
 directive @example on FIELD
 ```
 
