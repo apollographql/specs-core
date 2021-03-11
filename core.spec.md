@@ -159,11 +159,6 @@ Documents MUST include a definition for the {@core} directive. The provided defi
 - **Omit optional arguments** if they are never used in the document,
 - **Omit locations** where the directive never occurs,
 - **Introduce new arguments.** New arguments MUST be prefixed, e.g. `example__extensionArgument: Bool`. The prefix MUST be the name of a feature referenced with this or another {@core} directive within the document.
-- **Use `String` in place of custom scalars.** This is an ease-of-authoring affordance which allows document authors to omit the definitions of custom scalar types provided by features. Processors MUST continue to interpret such arguments and fields according to the encoding and decoding rules of the custom scalar type. For example, {@core} may be defined as follows, with no change to the behavior:
-
-```graphql example -- {@core} definition taking a String feature
-directive @core(feature: String)
-```
 
 ###! feature: String!
 
