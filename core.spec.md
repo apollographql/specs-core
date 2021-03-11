@@ -93,7 +93,7 @@ graph TB
 Core schemas:
   1. MUST be valid GraphQL schema documents,
   2. MUST contain exactly one `SchemaDefinition`, and
-  3. MUST use the {@core} directive on their schema definition to declare any features they reference by using {@core} to reference a [well-formed feature URL](#core/feature).
+  3. MUST use the {@core} directive on their schema definition to declare any features they reference by using {@core} to reference a [well-formed feature URL](#@core/feature).
 
 The first {@core} directive on the schema MUST reference the core spec itself, i.e. this document.
 
@@ -437,7 +437,7 @@ CollectFeatures(document) :
   - Let {coreName} be the name of the core feature found via {Bootstrap(document)}
   - Let {features} be a map of {featureName}: `String` -> `Directive`, initially empty.
   - For each directive {d} named `coreName` on the SchemaDefinition within {document},
-    - Let {name} be the spec's [name](#sec-Prefixing) as specified by the directive's `as:` argument or, if the argument is not present, the default name from the [feature url](#core/feature).
+    - Let {name} be the spec's [name](#sec-Prefixing) as specified by the directive's `as:` argument or, if the argument is not present, the default name from the [feature url](#@core/feature).
     - If {name} exists within {features}, the ***Name Uniqueness* validation fails**.
     - Insert {name} => {d} into {features}
   - **Return** {features}
