@@ -151,7 +151,7 @@ Declare a core feature present in this schema.
 directive @core(
   feature: String!,
   as: String,
-  export: Boolean)
+  export: Boolean! = false)
   repeatable on SCHEMA
 ```
 
@@ -219,7 +219,7 @@ Change the [names](#sec-Prefixing) of directives and schema elements from this s
 
 When [`as:`](#@core/as) is provided, processors MUST replace the default name prefix on the names of all [prefixed schema elements](#sec-Elements-which-must-be-prefixed) with the specified name.
 
-```graphql example -- Using {@core}`(feature:, as:)` to use a feature with a custom name
+```graphql example -- Using {@core}(feature:, as:) to use a feature with a custom name
 schema
   @core(feature: "https://spec.example.com/core/v1.0")
   @core(feature: "https://spec.example.com/example/v1.0", as: "eg")
@@ -247,6 +247,14 @@ directive @eg(data: eg__Data) on FIELD
 
 # (...other definitions omitted...)
 ```
+
+###! export: Boolean! = false
+
+Control whether the entire feature is exported to the API.
+
+If {true}, all schema elements--including all directive usages--from this feature will be included in the schema's API *unless* they are annotated with {@core__export}`(isExport: false)`.
+
+If {false} (the default), no schema elements from this feature will be included in the schema's API *unless* they are annotated with {@core__export}.
 
 ##! @core__export
 
