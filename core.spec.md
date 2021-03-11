@@ -122,7 +122,7 @@ directive @another on FIELD
 
 ## Renaming core itself
 
-It is possible to rename the core feature itself with the same `as:` mechanism used for all features:
+It is possible to rename the core feature itself with the same [`as:`](#@core/as) mechanism used for all features:
 
 ```graphql example -- Renaming {@core} to {@coreSchema}
 schema
@@ -217,7 +217,7 @@ The version is in the URL because when a human reader visits the URL, we would l
 
 Change the [names](#sec-Prefixing) of directives and schema elements from this specification. The specified string MUST be a valid GraphQL identifier and MUST NOT contain the namespace separator (two underscores, {"__"}).
 
-When `as:` is provided, processors MUST replace the default name prefix on the names of all [prefixed schema elements](#sec-Elements-which-must-be-prefixed) with the specified name.
+When [`as:`](#@core/as) is provided, processors MUST replace the default name prefix on the names of all [prefixed schema elements](#sec-Elements-which-must-be-prefixed) with the specified name.
 
 ```graphql example -- Using {@core}`(feature:, as:)` to use a feature with a custom name
 schema
@@ -425,9 +425,9 @@ It is possible to [rename the core feature](#sec-Renaming-core-itself) within a 
 
 Bootstrap(document) :
 1. For each directive {d} on the SchemaDefinition within {document},
-  1. If {d} has a `feature:` argument whose value is "https://lib.apollo.dev/core/v0.1", *and either*:
-    - &#8230;{d} has an `as:` argument whose value is equal to {d}'s name
-    - &#8230;*or* {d} does not have an `as:` argument and {d}'s name is `core`
+  1. If {d} has a [`feature:`](#@core/feature) argument whose value is "https://lib.apollo.dev/core/v0.1", *and either*:
+    - &#8230;{d} has an [`as:`](#@core/as) argument whose value is equal to {d}'s name
+    - &#8230;*or* {d} does not have an [`as:`](#@core/as) argument and {d}'s name is `core`
     - *then* **Return** `coreName` = {d}'s name
 - If no matching directive was found, the ***Has Core Feature* validation fails**.
 
@@ -439,7 +439,7 @@ CollectFeatures(document) :
   - Let {coreName} be the name of the core feature found via {Bootstrap(document)}
   - Let {features} be a map of {featureName}: `String` -> `Directive`, initially empty.
   - For each directive {d} named `coreName` on the SchemaDefinition within {document},
-    - Let {name} be the spec's [name](#sec-Prefixing) as specified by the directive's `as:` argument or, if the argument is not present, the default name from the [feature url](#@core/feature).
+    - Let {name} be the spec's [name](#sec-Prefixing) as specified by the directive's [`as:`](#@core/as) argument or, if the argument is not present, the default name from the [feature url](#@core/feature).
     - If {name} exists within {features}, the ***Name Uniqueness* validation fails**.
     - Insert {name} => {d} into {features}
   - **Return** {features}
@@ -453,7 +453,7 @@ It is also valid to reference multiple versions of the same spec under different
 
 :::[example](prefix-uniqueness.graphql#schema[0]) -- Explicit prefixes allow multiple versions of the same spec to coexist within a Document
 
-Without the explicit `as:`, the above would be invalid:
+Without the explicit [`as:`](#@core/as), the above would be invalid:
 
 :::[counter-example](prefix-uniqueness.graphql#schema[1]) -- Non-unique prefixes with multiple versions of the same spec
 
