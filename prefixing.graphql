@@ -1,0 +1,57 @@
+schema
+  @core(feature: "https://spec.example.com/featureA/v1.0")
+  @core(feature: "https://spec.example.com/featureB/v2.0", as: "B") {
+  query: Query
+}
+
+"""
+featureA_SomeType is a type defined by feature A.
+"""
+type featureA__SomeType {
+  """
+  nativeField is a field defined by featureA on a type also defined
+  by featureA (namely featureA_SomeType)
+  """
+  nativeField: Int @featureA__fieldDirective
+
+  """
+  B__foreignField is a field defined by featureB on a type defined
+  by featureA (namely featureA__SomeType)
+  """
+  B__foreignField: Int
+}
+
+"""
+featureA_SomeInput is an input specified by feature A
+"""
+input featureA_SomeInput {
+  """
+  nativeInputField is defined by featureA
+  """
+  nativeInputField: Int
+
+  """
+  B_field is defined by featureB as a field on featureA__SomeInput
+  """
+  B__field: String
+}
+
+"""
+featureA_Items is specified by feature A
+"""
+enum featureA__Items { ONE, TWO, THREE @B }
+
+"""
+@B is the root directive defined by featureB
+
+Root directives are named after their feature
+"""
+directive @B on ENUM_VALUE
+
+"""
+@featureA__fieldDirective is a non-root (prefixed) directive defined by featureA
+"""
+directive @featureA__fieldDirective on FIELD_DEFINITION
+
+directive @core(feature: String!, as: String, export: Boolean)
+  repeatable on SCHEMA

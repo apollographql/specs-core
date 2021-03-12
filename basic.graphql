@@ -1,0 +1,15 @@
+schema
+  @core(feature: "https://lib.apollo.dev/core/v0.1")
+  @core(feature: "https://specs.example.com/example/v1.0")
+{
+  query: Query
+}
+
+type Query {
+  field: Int @example
+}
+
+directive @example on FIELD
+
+directive @core(feature: String!)
+  repeatable on SCHEMA
