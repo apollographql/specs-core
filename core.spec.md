@@ -117,7 +117,7 @@ type SomeType {
 # `@another` is unspecified. Core processors will not extract metadata from
 # it, but its definition and all usages within the schema will be exposed
 # in the API.
-directive @another on FIELD
+directive @another on FIELD_DEFINITION
 ```
 
 ## Renaming core itself
@@ -138,7 +138,7 @@ type SomeType {
 
 directive @coreSchema(feature: String!, as: String)
   repeatable on SCHEMA
-directive @example on FIELD
+directive @example on FIELD_DEFINITION
 ```
 
 # Directives
@@ -157,8 +157,7 @@ directive @core(
 
 Documents MUST include a definition for the {@core} directive. The provided definition must be *compatible* with the definition above, but may:
 - **Omit arguments** if they are never used in the document,
-- **Omit locations** where the directive never occurs,
-- **Introduce new arguments.** New arguments MUST be prefixed, e.g. `example__extensionArgument: Bool`. The prefix MUST be the name of a feature referenced with this or another {@core} directive within the document.
+- **Introduce new arguments.** New arguments MUST be prefixed, e.g. `example__extensionArgument: Bool`. The prefix MUST be the name of a feature in the document.
 
 ###! feature: String!
 
@@ -192,7 +191,7 @@ The final two segments of the URL's [path](https://tools.ietf.org/html/rfc3986#s
   <dd>The tag for the [version](#sec-Versioning) of the feature used to author the document. Processors MUST select an implementation of the feature which can [satisfy](#sec-Satisfaction) the specified version.</dd>
 </dl>
 
-The version tag MUST be a valid {VersionTag}.
+The version tag MUST be a valid {VersionTag}. The name MUST be a valid GraphQL identifier which does not include the namespace separator ({"__"}).
 
 #### Ignore meaningless URL components
 
@@ -238,7 +237,7 @@ enum eg__Data {
 
 # Name transformation must also be applied to definitions pulled in from
 # specifications.
-directive @eg(data: eg__Data) on FIELD
+directive @eg(data: eg__Data) on FIELD_DEFINITION
 
 # (...other definitions omitted...)
 ```
@@ -302,7 +301,7 @@ enum example__Data {
   ITEM
 }
 
-directive @example(data: example__Data) on FIELD
+directive @example(data: example__Data) on FIELD_DEFINITION
 ```
 
 The prefix MUST NOT be elided within documentation; definitions of schema elements provided within the spec MUST include the default prefix.
@@ -422,38 +421,47 @@ Additionally, processors which prepare the schema for final public consumption M
 
 This section lays out algorithms for processing core schemas.
 
-Algorithms described in this section may produce *validation failures* or *validation warnings* if a document does not conform to the requirements core schema document. *Failures* are more severe, and SHOULD halt processing. *Warnings* indicate issues with the document which SHOULD be surfaced to users. Processors SHOULD generally choose to continue processing in the presence of warnings. Some processors MAY choose to adopt stricter standards, and halt processing on both warnings and failures.
+Algorithms described in this section may produce *validation failures* if a document does not conform to the requirements core schema document. Validation failures SHOULD halt processing. Some consumers, such as authoring tools, MAY attempt to continue processing in the presence of validation failures, but their behavior in such cases is unspecified.
 
-## Bootstrapping (validates Has Schema, Has Core Feature)
+Algorithms may also produce *warnings* if a document does not conform to requirements. *Warnings* indicate issues with the document which SHOULD be surfaced to users, but which do not necessarily require processing to halt. Consumers SHOULD generally choose to continue processing in the presence of warnings. Some consumers MAY choose to adopt stricter standards, and halt processing on both warnings and failures.
+
+## Bootstrapping
 
 Determine the name of the core specification within the document.
 
 It is possible to [rename the core feature](#sec-Renaming-core-itself) within a document. This process determines the actual name for the core feature if one is present.
 
 **Fails** the *Has Schema* validation if there are no SchemaDefinitions in the document
-**Warns** the *Multiple Schemas* validation if there are multiple SchemaDefinitions in the document
+**Warns** *Extra Schema* for extra SchemaDefinitions in the document after the first
 **Fails** the *Has Core Feature* validation if the core feature is not referenced with a {@core} directive within the document.
 
 Bootstrap(document) :
-1. Let {schema} be the only SchemaDefinition in {document},
+1. Let {schema} be the only SchemaDefinition in {document}
   1. ...if no SchemaDefinitions are present in {document}, the ***Has Schema* validation fails**.
-  2. ...if multiple SchemaDefinitions are present in {document}, let {schema} be the first one, and issue the ***Multiple Schemas* warning** for each subsequent SchemaDefinition.
+  2. ...if multiple SchemaDefinitions are present in {document}, let {schema} be the first SchemaDefinition in {document}. Issue the ***Extra Schema* warning** for each subsequent SchemaDefinition, and ignore them for all further processing.
 1. For each directive {d} on {schema},
-  1. If {d} has a [`feature:`](#@core/feature) argument whose value is "https://lib.apollo.dev/core/v0.1", *and either*:
+  1. If {d} has a [`feature:`](#@core/feature) argument which [parses as a feature URL](#@core/feature), *and* whose identity is {"https://lib.apollo.dev/core/"} *and* whose version is {"v0.1"}, *and either*:
     - &#8230;{d} has an [`as:`](#@core/as) argument whose value is equal to {d}'s name
     - &#8230;*or* {d} does not have an [`as:`](#@core/as) argument and {d}'s name is `core`
     - *then* **Return** `coreName` = {d}'s name
 - If no matching directive was found, the ***Has Core Feature* validation fails**.
 
-## Feature Collection (validates Name Uniqueness)
+## Feature Collection
 
 Collect a map of ({featureName}: `String`) -> `Directive`, where `Directive` is a {@core} Directive which introduces the feature named {featureName} into the document.
+
+**Fails** the *Name Uniqueness* validation if feature names are not unique within the document.
+**Warns** *Invalid Feature URL* validation for any invalid feature URLs.
 
 CollectFeatures(document) :
   - Let {coreName} be the name of the core feature found via {Bootstrap(document)}
   - Let {features} be a map of {featureName}: `String` -> `Directive`, initially empty.
   - For each directive {d} named `coreName` on the SchemaDefinition within {document},
-    - Let {name} be the spec's [name](#sec-Prefixing) as specified by the directive's [`as:`](#@core/as) argument or, if the argument is not present, the default name from the [`feature:`](#@core/feature) argument.
+    - Let {defaultName} and {version} be the result of parsing {d}'s `feature:` argument according to the [specified rules for feature URLs](#@core/feature)
+    - If the `feature:` is not present or fails to parse:
+      - Issue the ***Invalid Feature URL* warning** for {d},
+      - **Continue** to next {d}
+    - Let {name} be the spec's [name](#sec-Prefixing) as specified by the directive's [`as:`](#@core/as) argument or, if the argument is not present, {defaultName}
     - If {name} exists within {features}, the ***Name Uniqueness* validation fails**.
     - Insert {name} => {d} into {features}
   - **Return** {features}
@@ -484,6 +492,9 @@ AssignFeatures(document) :
   - Let {assignments} be a map of ({element}: *Any Named Element*) -> {feature}: `Directive` | {null}, initally empty
   - For each named schema element {e} within the {document}
     - Let {name} be the name of the {e}
+    - If {e} is a Directive and {name} is a key within {features},
+      - Insert {e} => {features}`[`{name}`]` into {assignments}
+      - **Continue** to next {e}
     - If {name} begins with {"__"},
       - Insert {e} => {null} into {assignments}
       - **Continue** to next {e}
@@ -504,7 +515,7 @@ IsExported(element) :
   - Let {assignments} be the result of assigning features to elements via {AssignFeatures(document)}
   - For each Directive {d} on {element},
     - If {d}'s name is {coreName}`__export`,
-      - If {d} does not have an `export:` argument *or* `export:` is {true}, **Return** {true}
+      - If {d} does not have an `export:` argument *or* its `export:` argument is {true}, **Return** {true}
       - If {d} has an `export:` argument whose value is {false}, **Return** {false}
   - If {assignments}`[`{element}`]` is {null}, **Return** {true}
   - Let {feature} be the directive referenced from {assignments}`[`{element}`]`

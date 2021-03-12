@@ -51,7 +51,7 @@ directive @B on ENUM_VALUE
 """
 @featureA__fieldDirective is a non-root (prefixed) directive defined by featureA
 """
-directive @featureA__fieldDirective on FIELD
+directive @featureA__fieldDirective on FIELD_DEFINITION
 
 directive @core(feature: String!, as: String, export: Boolean)
   repeatable on SCHEMA
