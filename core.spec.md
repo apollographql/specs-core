@@ -420,14 +420,25 @@ Additionally, processors which prepare the schema for final public consumption M
 
 # Validations &amp; Algorithms
 
-## Bootstrapping (validates Has Core Feature)
+This section lays out algorithms for processing core schemas.
 
-Determine the name of the core specification within the document *or* fail the *Has Core Feature* validation.
+Algorithms described in this section may produce *validation failures* or *validation warnings* if a document does not conform to the requirements core schema document. *Failures* are more severe, and SHOULD halt processing. *Warnings* indicate issues with the document which SHOULD be surfaced to users. Processors SHOULD generally choose to continue processing in the presence of warnings. Some processors MAY choose to adopt stricter standards, and halt processing on both warnings and failures.
+
+## Bootstrapping (validates Has Schema, Has Core Feature)
+
+Determine the name of the core specification within the document.
 
 It is possible to [rename the core feature](#sec-Renaming-core-itself) within a document. This process determines the actual name for the core feature if one is present.
 
+**Fails** the *Has Schema* validation if there are no SchemaDefinitions in the document
+**Warns** the *Multiple Schemas* validation if there are multiple SchemaDefinitions in the document
+**Fails** the *Has Core Feature* validation if the core feature is not referenced with a {@core} directive within the document.
+
 Bootstrap(document) :
-1. For each directive {d} on the SchemaDefinition within {document},
+1. Let {schema} be the only SchemaDefinition in {document},
+  1. ...if no SchemaDefinitions are present in {document}, the ***Has Schema* validation fails**.
+  2. ...if multiple SchemaDefinitions are present in {document}, let {schema} be the first one, and issue the ***Multiple Schemas* warning** for each subsequent SchemaDefinition.
+1. For each directive {d} on {schema},
   1. If {d} has a [`feature:`](#@core/feature) argument whose value is "https://lib.apollo.dev/core/v0.1", *and either*:
     - &#8230;{d} has an [`as:`](#@core/as) argument whose value is equal to {d}'s name
     - &#8230;*or* {d} does not have an [`as:`](#@core/as) argument and {d}'s name is `core`
@@ -442,7 +453,7 @@ CollectFeatures(document) :
   - Let {coreName} be the name of the core feature found via {Bootstrap(document)}
   - Let {features} be a map of {featureName}: `String` -> `Directive`, initially empty.
   - For each directive {d} named `coreName` on the SchemaDefinition within {document},
-    - Let {name} be the spec's [name](#sec-Prefixing) as specified by the directive's [`as:`](#@core/as) argument or, if the argument is not present, the default name from the [feature url](#@core/feature).
+    - Let {name} be the spec's [name](#sec-Prefixing) as specified by the directive's [`as:`](#@core/as) argument or, if the argument is not present, the default name from the [`feature:`](#@core/feature) argument.
     - If {name} exists within {features}, the ***Name Uniqueness* validation fails**.
     - Insert {name} => {d} into {features}
   - **Return** {features}
