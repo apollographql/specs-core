@@ -443,7 +443,7 @@ Bootstrap(document) :
   1. If {d} has a [`feature:`](#@core/feature) argument which [parses as a feature URL](#@core/feature), *and* whose identity is {"https://lib.apollo.dev/core/"} *and* whose version is {"v0.1"}, *and either*:
     - &#8230;{d} has an [`as:`](#@core/as) argument whose value is equal to {d}'s name
     - &#8230;*or* {d} does not have an [`as:`](#@core/as) argument and {d}'s name is `core`
-    - *then* **Return** `coreName` = {d}'s name
+    - *then* **Return** {d}'s name
 - If no matching directive was found, the ***Has Core Feature* validation fails**.
 
 ## Feature Collection
@@ -503,7 +503,7 @@ AssignFeatures(document) :
       - If {prefix} exists within {features}, insert {e} => {features}`[`{prefix}`]` into {assignments}
         - Else, insert {e} => {null} into {assignments}
       - **Continue** to next {e}
-    - Insert `e => null` into {assignments}
+    - Insert {e} => {null} into {assignments}
   - **Return** {assignments}
 
 ## Is Exported?
