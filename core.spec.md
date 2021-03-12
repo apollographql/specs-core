@@ -271,7 +271,7 @@ directive @core__export(export: Boolean! = true)
 
 {@core__export} can occur at any type system location. Elements with {@core__export} will always be included in the API. Elements with {@core__export}`(export: false)` will always be excluded from the API.
 
-###! export: Boolean
+###! export: Boolean! = true
 
 If true, the element is always exported, regardless of whether the feature which defines it [is exported](#@core/export). If false, the element is never exported.
 
