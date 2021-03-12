@@ -43,7 +43,7 @@ A basic core schema:
 
 **Core schemas are not a new language.** All core schema documents are valid GraphQL schema documents. However, this specification introduces new requirements, so not all valid GraphQL schemas are valid core schemas.
 
-The broad intention behind core schemas is to provide a *single document* which provides all the necessary configuration for programs that process and serve serves the schema to GraphQL clients, primarily by following directives in order to determine how to resolve queries made against that schema.
+The broad intention behind core schemas is to provide a *single document* which provides all the necessary configuration for programs that process and serve the schema to GraphQL clients, primarily by following directives in order to determine how to resolve queries made against that schema.
 
 # Parts of a Core Schema
 
