@@ -209,7 +209,7 @@ The version is in the URL because when a human reader visits the URL, we would l
 
 ###! as: String
 
-Change the [names](#sec-Prefixing) of directives and schema elements from this specification. The specified string MUST be a valid GraphQL identifier and MUST NOT contain the namespace separator (two underscores, {"__"}).
+Change the [names](#sec-Prefixing) of directives and schema elements from this specification. The specified string MUST be a valid GraphQL identifier and MUST NOT contain the namespace separator (two underscores, {"__"}) or end with an underscore.
 
 When [`as:`](#@core/as) is provided, processors MUST replace the default name prefix on the names of all [prefixed schema elements](#sec-Elements-which-must-be-prefixed) with the specified name.
 
@@ -280,7 +280,8 @@ If true, the element is always exported, regardless of whether the feature which
 With the exception of a single root directive, core feature specifications MUST prefix all schema elements they introduce. The prefix:
   1. MUST match the default name of the feature as derived from the feature's specification URL,
   2. MUST be a string of characters valid within GraphQL names, and
-  3. MUST NOT contain the core namespace separator, which is two underscores ({"__"}).
+  3. MUST NOT contain the core namespace separator, which is two underscores ({"__"}), and
+  4. MUST NOT end with an underscore (which would create ambiguity between whether {"x___y"} is prefix `x_` for element `y` or prefix `x` for element `_y`).
 
 Prefixed names consist of the name of the feature, followed by two underscores, followed by the name of the element (which can be any valid GraphQL identifier). For instance, the `core` specification (which you are currently reading) introduces elements named [{@core}](#@core) [{@core__export}](#@core__export).
 
