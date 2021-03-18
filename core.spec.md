@@ -426,7 +426,8 @@ It is possible to [rename the core feature](#sec-Renaming-core-itself) within a 
 
 **Fails** the *Has Schema* validation if there are no SchemaDefinitions in the document
 **Warns** *Extra Schema* for extra SchemaDefinitions in the document after the first
-**Fails** the *Has Core Feature* validation if the core feature is not referenced with a {@core} directive within the document.
+**Fails** the *Has Core Feature* validation if the `core` feature itself is not referenced with a {@core} directive within the document
+**Fails** the *Bootstrap Core Feature Listed First* validation if the reference to the `core` feature is not the first {@core} directive on the document's SchemaDefinition
 
 Bootstrap(document) :
 1. Let {schema} be the only SchemaDefinition in {document}
@@ -436,7 +437,7 @@ Bootstrap(document) :
   1. If {d} has a [`feature:`](#@core/feature) argument which [parses as a feature URL](#@core/feature), *and* whose identity is {"https://lib.apollo.dev/core/"} *and* whose version is {"v0.1"}, *and either*:
     - &#8230;{d} has an [`as:`](#@core/as) argument whose value is equal to {d}'s name
     - &#8230;*or* {d} does not have an [`as:`](#@core/as) argument and {d}'s name is `core`
-    - *then* **Return** {d}'s name
+    - *then* if any directive on {schema} listed before {d} has the same name as {d}, the ***Bootstrap Core Feature Listed First* validation fails**; otherwise **Return** {d}'s name
 - If no matching directive was found, the ***Has Core Feature* validation fails**.
 
 ## Feature Collection
