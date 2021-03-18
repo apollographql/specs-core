@@ -6,12 +6,12 @@ schema
 }
 
 """
-featureA_SomeType is a type defined by feature A.
+featureA__SomeType is a type defined by feature A.
 """
 type featureA__SomeType {
   """
   nativeField is a field defined by featureA on a type also defined
-  by featureA (namely featureA_SomeType)
+  by featureA (namely featureA__SomeType)
   """
   nativeField: Int @featureA__fieldDirective
 
@@ -23,22 +23,22 @@ type featureA__SomeType {
 }
 
 """
-featureA_SomeInput is an input specified by feature A
+featureA__SomeInput is an input specified by feature A
 """
-input featureA_SomeInput {
+input featureA__SomeInput {
   """
   nativeInputField is defined by featureA
   """
   nativeInputField: Int
 
   """
-  B_field is defined by featureB as a field on featureA__SomeInput
+  B__field is defined by featureB as a field on featureA__SomeInput
   """
   B__field: String
 }
 
 """
-featureA_Items is specified by feature A
+featureA__Items is specified by feature A
 """
 enum featureA__Items { ONE, TWO, THREE @B }
 
