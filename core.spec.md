@@ -229,8 +229,9 @@ type User {
 # Additional specified schema elements must have their prefixes set
 # to the new name.
 #
-# This data enum was specified as `example__Data`, but will be renamed
-# as `eg__Data`:
+# The spec at https://spec.example.com/example/v1.0 calls this enum
+# `example__Data`, but because of the `as:` argument above, processors
+# will use this `eg__Data` enum instead.
 enum eg__Data {
   ITEM
 }
