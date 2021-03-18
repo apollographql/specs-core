@@ -118,6 +118,8 @@ type SomeType {
 # it, but its definition and all usages within the schema will be exposed
 # in the API.
 directive @another on FIELD_DEFINITION
+
+directive @core(feature: String!) repeatable on SCHEMA
 ```
 
 ## Renaming core itself
@@ -215,7 +217,7 @@ When [`as:`](#@core/as) is provided, processors looking for [prefixed schema ele
 
 ```graphql example -- Using {@core}(feature:, as:) to use a feature with a custom name
 schema
-  @core(feature: "https://spec.example.com/core/v1.0")
+  @core(feature: "https://lib.apollo.dev/core/v0.1")
   @core(feature: "https://spec.example.com/example/v1.0", as: "eg")
 {
   query: Query
@@ -289,7 +291,9 @@ Prefixed names consist of the name of the feature, followed by two underscores, 
 A feature's *root directive* is an exception to the prefixing requirements. Feature specifications MAY introduce a single directive which carries only the name of the feature, with no prefix required. For example, the `core` specification introduces a {@core} directive. This directive has the same name as the feature ("`core`"), and so requires no prefix.
 
 ```graphql example -- Using the @core directive without changing the prefix
-schema @core(feature: "https://spec.example.com/example/v1.0") {
+schema
+ @core(feature: "https://lib.apollo.dev/core/v0.1")
+ @core(feature: "https://spec.example.com/example/v1.0") {
   query: Query
 }
 
@@ -303,6 +307,7 @@ enum example__Data {
   ITEM
 }
 
+directive @core(feature: String!) repeatable on SCHEMA
 directive @example(data: example__Data) on FIELD_DEFINITION
 ```
 
