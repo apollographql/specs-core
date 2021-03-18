@@ -424,10 +424,10 @@ Determine the name of the core specification within the document.
 
 It is possible to [rename the core feature](#sec-Renaming-core-itself) within a document. This process determines the actual name for the core feature if one is present.
 
-**Fails** the *Has Schema* validation if there are no SchemaDefinitions in the document
-**Warns** *Extra Schema* for extra SchemaDefinitions in the document after the first
-**Fails** the *Has Core Feature* validation if the `core` feature itself is not referenced with a {@core} directive within the document
-**Fails** the *Bootstrap Core Feature Listed First* validation if the reference to the `core` feature is not the first {@core} directive on the document's SchemaDefinition
+- **Fails** the *Has Schema* validation if there are no SchemaDefinitions in the document
+- **Warns** *Extra Schema* for extra SchemaDefinitions in the document after the first
+- **Fails** the *Has Core Feature* validation if the `core` feature itself is not referenced with a {@core} directive within the document
+- **Fails** the *Bootstrap Core Feature Listed First* validation if the reference to the `core` feature is not the first {@core} directive on the document's SchemaDefinition
 
 Bootstrap(document) :
 1. Let {schema} be the only SchemaDefinition in {document}
@@ -444,8 +444,8 @@ Bootstrap(document) :
 
 Collect a map of ({featureName}: `String`) -> `Directive`, where `Directive` is a {@core} Directive which introduces the feature named {featureName} into the document.
 
-**Fails** the *Name Uniqueness* validation if feature names are not unique within the document.
-**Warns** *Invalid Feature URL* validation for any invalid feature URLs.
+- **Fails** the *Name Uniqueness* validation if feature names are not unique within the document.
+- **Warns** *Invalid Feature URL* validation for any invalid feature URLs.
 
 CollectFeatures(document) :
   - Let {coreName} be the name of the core feature found via {Bootstrap(document)}
