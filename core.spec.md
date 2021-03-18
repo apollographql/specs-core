@@ -450,7 +450,7 @@ Collect a map of ({featureName}: `String`) -> `Directive`, where `Directive` is 
 CollectFeatures(document) :
   - Let {coreName} be the name of the core feature found via {Bootstrap(document)}
   - Let {features} be a map of {featureName}: `String` -> `Directive`, initially empty.
-  - For each directive {d} named `coreName` on the SchemaDefinition within {document},
+  - For each directive {d} named {coreName} on the SchemaDefinition within {document},
     - Let {specifiedFeatureName} and {version} be the result of parsing {d}'s `feature:` argument according to the [specified rules for feature URLs](#@core/feature)
     - If the `feature:` is not present or fails to parse:
       - Issue the ***Invalid Feature URL* warning** for {d},
