@@ -340,7 +340,7 @@ Digit : "0" | PositiveDigit
 
 PositiveDigit : "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 
-Specs are versioned with a **subset** of a [Semantic Version Number](https://semver.org/spec/v2.0.0.html) containing only the major and minor parts. Thus, specifications SHOULD provide a version of the form {Major}.{Minor}, where both integers >= 0.
+Specs are versioned with a **subset** of a [Semantic Version Number](https://semver.org/spec/v2.0.0.html) containing only the major and minor parts. Thus, specifications SHOULD provide a version of the form `v`{Major}`.`{Minor}, where both integers >= 0.
 
 ```text example -- Valid version tags
 v2.2
