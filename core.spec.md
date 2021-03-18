@@ -211,7 +211,7 @@ The version is in the URL because when a human reader visits the URL, we would l
 
 Change the [names](#sec-Prefixing) of directives and schema elements from this specification. The specified string MUST be a valid [GraphQL name](https://spec.graphql.org/draft/#Name) and MUST NOT contain the namespace separator (two underscores, {"__"}) or end with an underscore.
 
-When [`as:`](#@core/as) is provided, processors MUST replace the default name prefix on the names of all [prefixed schema elements](#sec-Elements-which-must-be-prefixed) with the specified name.
+When [`as:`](#@core/as) is provided, processors looking for [prefixed schema elements](#sec-Elements-which-must-be-prefixed) MUST look for elements whose names are the specified name with the prefix replaced with the name provided to the `as:` argument.
 
 ```graphql example -- Using {@core}(feature:, as:) to use a feature with a custom name
 schema
@@ -279,7 +279,7 @@ If true, the element is always exported, regardless of whether the feature which
 # Prefixing
 
 With the exception of a single root directive, core feature specifications MUST prefix all schema elements they introduce. The prefix:
-  1. MUST match the default name of the feature as derived from the feature's specification URL,
+  1. MUST match the name of the feature as derived from the feature's specification URL,
   2. MUST be a valid [GraphQL name](https://spec.graphql.org/draft/#Name), and
   3. MUST NOT contain the core namespace separator, which is two underscores ({"__"}), and
   4. MUST NOT end with an underscore (which would create ambiguity between whether {"x___y"} is prefix `x_` for element `y` or prefix `x` for element `_y`).
@@ -288,7 +288,7 @@ Prefixed names consist of the name of the feature, followed by two underscores, 
 
 A feature's *root directive* is an exception to the prefixing requirements. Feature specifications MAY introduce a single directive which carries only the name of the feature, with no prefix required. For example, the `core` specification introduces a {@core} directive. This directive has the same name as the feature ("`core`"), and so requires no prefix.
 
-```graphql example -- Using the @core directive with a spec's default name
+```graphql example -- Using the @core directive without changing the prefix
 schema @core(feature: "https://spec.example.com/example/v1.0") {
   query: Query
 }
@@ -306,7 +306,7 @@ enum example__Data {
 directive @example(data: example__Data) on FIELD_DEFINITION
 ```
 
-The prefix MUST NOT be elided within documentation; definitions of schema elements provided within the spec MUST include the default prefix.
+The prefix MUST NOT be elided within documentation; definitions of schema elements provided within the spec MUST include the feature's name as a prefix.
 
 ## Elements which must be prefixed
 
@@ -459,13 +459,13 @@ CollectFeatures(document) :
   - Let {coreName} be the name of the core feature found via {Bootstrap(document)}
   - Let {features} be a map of {featureName}: `String` -> `Directive`, initially empty.
   - For each directive {d} named `coreName` on the SchemaDefinition within {document},
-    - Let {defaultName} and {version} be the result of parsing {d}'s `feature:` argument according to the [specified rules for feature URLs](#@core/feature)
+    - Let {specifiedFeatureName} and {version} be the result of parsing {d}'s `feature:` argument according to the [specified rules for feature URLs](#@core/feature)
     - If the `feature:` is not present or fails to parse:
       - Issue the ***Invalid Feature URL* warning** for {d},
       - **Continue** to next {d}
-    - Let {name} be the spec's [name](#sec-Prefixing) as specified by the directive's [`as:`](#@core/as) argument or, if the argument is not present, {defaultName}
-    - If {name} exists within {features}, the ***Name Uniqueness* validation fails**.
-    - Insert {name} => {d} into {features}
+    - Let {featureName} be the {d}'s [`as:`](#@core/as) argument or, if the argument is not present, {specifiedFeatureName}
+    - If {featureName} exists within {features}, the ***Name Uniqueness* validation fails**.
+    - Insert {featureName} => {d} into {features}
   - **Return** {features}
 
 
