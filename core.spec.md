@@ -362,20 +362,6 @@ Patch and pre-release qualifiers are judged to be not particularly meaningful in
 
 As with [semver](https://semver.org/spec/v2.0.0.html), the `0.x` version series is special: there is no expectation of compatibility between versions `0.x` and `0.y`. For example, a processor must not activate implementation `0.4` to satisfy a requested version of `0.2`.
 
-## Ordering
-
-Given {Version}s {a} and {b}, return whether {a} is {LESS_THAN}, {GREATER_THAN}, or {EQUAL} to {b}.
-
-CompareVersions(a, b) :
-  1. If {a}.{Major} < {b}.{Major}, return {LESS_THAN}
-  2. If {a}.{Major} > {b}.{Major}, return {GREATER_THAN}
-  3. If {a}.{Major} == {b}.{Major}:
-    1. If {a}.{Minor} == {b}.{Minor}, return {EQUAL}
-    2. If {a}.{Minor} > {b}.{Minor}, return {GREATER_THAN}
-    3. Otherwise, return {LESS_THAN}
-
-Note: This ordering does *not* guarantee that if A > B then A can satisfy a version requirement of B. For example, `2.0 > 1.9`, but `2.0` cannot [satisfy](#sec-Satisfaction) the requirements of a document which references version `1.9`, since the major version update introduced possibly-breaking changes.
-
 ## Satisfaction
 
 Given a version {requested} by a document and an {available} version of an implementation, the following algorithm will determine if the {available} version can satisfy the {requested} version:
@@ -387,7 +373,7 @@ Satisfies(requested, available) :
 
 ## Referencing versions and activating implementations
 
-Schema documents MUST reference a feature version which supports all the schema elements and behaviors required by the document. As a practical matter, authors should generally prefer to reference the [lowest](#sec-Ordering) versions which can [satisfy](#sec-Satisfaction) their requirements, as this imposes the fewest constraints on processors and is thus more likely to be supported. Authors MAY choose a higher version which they believe has sufficient support.
+Schema documents MUST reference a feature version which supports all the schema elements and behaviors required by the document. As a practical matter, authors will generally prefer to reference a version they have reason to believe is supported by the most processors; depending on context, this might be an old stable version with a low major version, or a new less-deprecated version with a large major version.
 
 If a processor chooses to activate support for a feature, the processor MUST activate an implementation which can [satisfy](#sec-Satisfaction) the version required by the document.
 
