@@ -270,7 +270,7 @@ directive @core__export(export: Boolean! = true)
   | INPUT_FIELD_DEFINITION
 ```
 
-{@core__export} can occur at any type system location. Elements with {@core__export} will always be included in the API. Elements with {@core__export}`(export: false)` will always be excluded from the API.
+{@core__export} can occur at any type system location. Elements with {@core__export} or {@core__export}`(export: true)` will always be included in the API. Elements with {@core__export}`(export: false)` will always be excluded from the API. When you define the directive in a schema, you may omit locations from the definition that are not used by instances of the directive in your schema.
 
 ###! export: Boolean! = true
 
