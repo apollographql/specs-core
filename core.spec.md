@@ -418,8 +418,6 @@ This section lays out algorithms for processing core schemas.
 
 Algorithms described in this section may produce *validation failures* if a document does not conform to the requirements core schema document. Validation failures SHOULD halt processing. Some consumers, such as authoring tools, MAY attempt to continue processing in the presence of validation failures, but their behavior in such cases is unspecified.
 
-Algorithms may also produce *warnings* if a document does not conform to requirements. *Warnings* indicate issues with the document which SHOULD be surfaced to users, but which do not necessarily require processing to halt. Consumers SHOULD generally choose to continue processing in the presence of warnings. Some consumers MAY choose to adopt stricter standards, and halt processing on both warnings and failures.
-
 ## Bootstrapping
 
 Determine the name of the core specification within the document.
@@ -427,14 +425,14 @@ Determine the name of the core specification within the document.
 It is possible to [rename the core feature](#sec-Renaming-core-itself) within a document. This process determines the actual name for the core feature if one is present.
 
 - **Fails** the *Has Schema* validation if there are no SchemaDefinitions in the document
-- **Warns** *Extra Schema* for extra SchemaDefinitions in the document after the first
+- **Fails** *Extra Schema* for extra SchemaDefinitions in the document after the first (note that is is also [invalid GraphQL](http://spec.graphql.org/draft/#sec-Root-Operation-Types)
 - **Fails** the *Has Core Feature* validation if the `core` feature itself is not referenced with a {@core} directive within the document
 - **Fails** the *Bootstrap Core Feature Listed First* validation if the reference to the `core` feature is not the first {@core} directive on the document's SchemaDefinition
 
 Bootstrap(document) :
 1. Let {schema} be the only SchemaDefinition in {document}
   1. ...if no SchemaDefinitions are present in {document}, the ***Has Schema* validation fails**.
-  2. ...if multiple SchemaDefinitions are present in {document}, let {schema} be the first SchemaDefinition in {document}. Issue the ***Extra Schema* warning** for each subsequent SchemaDefinition, and ignore them for all further processing.
+  2. ...if multiple SchemaDefinitions are present in {document}, the ***Extra Schema* validation fails**.
 1. For each directive {d} on {schema},
   1. If {d} has a [`feature:`](#@core/feature) argument which [parses as a feature URL](#@core/feature), *and* whose identity is {"https://lib.apollo.dev/core/"} *and* whose version is {"v0.1"}, *and either*:
     - &#8230;{d} has an [`as:`](#@core/as) argument whose value is equal to {d}'s name
@@ -447,7 +445,7 @@ Bootstrap(document) :
 Collect a map of ({featureName}: `String`) -> `Directive`, where `Directive` is a {@core} Directive which introduces the feature named {featureName} into the document.
 
 - **Fails** the *Name Uniqueness* validation if feature names are not unique within the document.
-- **Warns** *Invalid Feature URL* validation for any invalid feature URLs.
+- **Fails** *Invalid Feature URL* validation for any invalid feature URLs.
 
 CollectFeatures(document) :
   - Let {coreName} be the name of the core feature found via {Bootstrap(document)}
@@ -455,8 +453,7 @@ CollectFeatures(document) :
   - For each directive {d} named {coreName} on the SchemaDefinition within {document},
     - Let {specifiedFeatureName} and {version} be the result of parsing {d}'s `feature:` argument according to the [specified rules for feature URLs](#@core/feature)
     - If the `feature:` is not present or fails to parse:
-      - Issue the ***Invalid Feature URL* warning** for {d},
-      - **Continue** to next {d}
+      - The ***Invalid Feature URL* validation fails** for {d},
     - Let {featureName} be the {d}'s [`as:`](#@core/as) argument or, if the argument is not present, {specifiedFeatureName}
     - If {featureName} exists within {features}, the ***Name Uniqueness* validation fails**.
     - Insert {featureName} => {d} into {features}
