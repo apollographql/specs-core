@@ -425,14 +425,12 @@ Determine the name of the core specification within the document.
 It is possible to [rename the core feature](#sec-Renaming-core-itself) within a document. This process determines the actual name for the core feature if one is present.
 
 - **Fails** the *Has Schema* validation if there are no SchemaDefinitions in the document
-- **Fails** *Extra Schema* for extra SchemaDefinitions in the document after the first (note that is is also [invalid GraphQL](http://spec.graphql.org/draft/#sec-Root-Operation-Types)
 - **Fails** the *Has Core Feature* validation if the `core` feature itself is not referenced with a {@core} directive within the document
 - **Fails** the *Bootstrap Core Feature Listed First* validation if the reference to the `core` feature is not the first {@core} directive on the document's SchemaDefinition
 
 Bootstrap(document) :
-1. Let {schema} be the only SchemaDefinition in {document}
+1. Let {schema} be the only SchemaDefinition in {document}. (Note that legal GraphQL documents [must include at most one SchemaDefinition](http://spec.graphql.org/draft/#sec-Root-Operation-Types).)
   1. ...if no SchemaDefinitions are present in {document}, the ***Has Schema* validation fails**.
-  2. ...if multiple SchemaDefinitions are present in {document}, the ***Extra Schema* validation fails**.
 1. For each directive {d} on {schema},
   1. If {d} has a [`feature:`](#@core/feature) argument which [parses as a feature URL](#@core/feature), *and* whose identity is {"https://lib.apollo.dev/core/"} *and* whose version is {"v0.1"}, *and either*:
     - &#8230;{d} has an [`as:`](#@core/as) argument whose value is equal to {d}'s name
