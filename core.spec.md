@@ -286,7 +286,9 @@ With the exception of a single root directive, core feature specifications MUST 
   3. MUST NOT contain the core namespace separator, which is two underscores ({"__"}), and
   4. MUST NOT end with an underscore (which would create ambiguity between whether {"x___y"} is prefix `x_` for element `y` or prefix `x` for element `_y`).
 
-Prefixed names consist of the name of the feature, followed by two underscores, followed by the name of the element, which can be any valid [GraphQL name](https://spec.graphql.org/draft/#Name). (Note that both parts must be valid GraphQL names, and GraphQL names cannot start with digits, so core feature specifications cannot introduce names like `@feature__24hours`.) For instance, the `core` specification (which you are currently reading) introduces elements named [{@core}](#@core) [{@core__export}](#@core__export).
+Prefixed names consist of the name of the feature, followed by two underscores, followed by the name of the element, which can be any valid [GraphQL name](https://spec.graphql.org/draft/#Name). For instance, the `core` specification (which you are currently reading) introduces elements named [{@core}](#@core) [{@core__export}](#@core__export).
+
+Note that both parts must be valid GraphQL names, and GraphQL names cannot start with digits, so core feature specifications cannot introduce names like `@feature__24hours`.
 
 A feature's *root directive* is an exception to the prefixing requirements. Feature specifications MAY introduce a single directive which carries only the name of the feature, with no prefix required. For example, the `core` specification introduces a {@core} directive. This directive has the same name as the feature ("`core`"), and so requires no prefix.
 
