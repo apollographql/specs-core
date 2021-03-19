@@ -9,7 +9,7 @@ type Query {
   field: Int @example
 }
 
-directive @example on FIELD
+directive @example on FIELD_DEFINITION
 
 directive @core(feature: String!)
   repeatable on SCHEMA

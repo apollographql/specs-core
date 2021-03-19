@@ -118,6 +118,8 @@ type SomeType {
 # it, but its definition and all usages within the schema will be exposed
 # in the API.
 directive @another on FIELD_DEFINITION
+
+directive @core(feature: String!) repeatable on SCHEMA
 ```
 
 ## Renaming core itself
@@ -191,7 +193,7 @@ The final two segments of the URL's [path](https://tools.ietf.org/html/rfc3986#s
   <dd>The tag for the [version](#sec-Versioning) of the feature used to author the document. Processors MUST select an implementation of the feature which can [satisfy](#sec-Satisfaction) the specified version.</dd>
 </dl>
 
-The version tag MUST be a valid {VersionTag}. The name MUST be a valid GraphQL identifier which does not include the namespace separator ({"__"}).
+The version tag MUST be a valid {VersionTag}. The name MUST be a valid [GraphQL name](https://spec.graphql.org/draft/#Name) which does not include the namespace separator ({"__"}).
 
 #### Ignore meaningless URL components
 
@@ -209,13 +211,13 @@ The version is in the URL because when a human reader visits the URL, we would l
 
 ###! as: String
 
-Change the [names](#sec-Prefixing) of directives and schema elements from this specification. The specified string MUST be a valid GraphQL identifier and MUST NOT contain the namespace separator (two underscores, {"__"}).
+Change the [names](#sec-Prefixing) of directives and schema elements from this specification. The specified string MUST be a valid [GraphQL name](https://spec.graphql.org/draft/#Name) and MUST NOT contain the namespace separator (two underscores, {"__"}) or end with an underscore.
 
-When [`as:`](#@core/as) is provided, processors MUST replace the default name prefix on the names of all [prefixed schema elements](#sec-Elements-which-must-be-prefixed) with the specified name.
+When [`as:`](#@core/as) is provided, processors looking for [prefixed schema elements](#sec-Elements-which-must-be-prefixed) MUST look for elements whose names are the specified name with the prefix replaced with the name provided to the `as:` argument.
 
 ```graphql example -- Using {@core}(feature:, as:) to use a feature with a custom name
 schema
-  @core(feature: "https://spec.example.com/core/v1.0")
+  @core(feature: "https://lib.apollo.dev/core/v0.1")
   @core(feature: "https://spec.example.com/example/v1.0", as: "eg")
 {
   query: Query
@@ -229,8 +231,9 @@ type User {
 # Additional specified schema elements must have their prefixes set
 # to the new name.
 #
-# This data enum was specified as `example__Data`, but will be renamed
-# as `eg__Data`:
+# The spec at https://spec.example.com/example/v1.0 calls this enum
+# `example__Data`, but because of the `as:` argument above, processors
+# will use this `eg__Data` enum instead.
 enum eg__Data {
   ITEM
 }
@@ -269,7 +272,7 @@ directive @core__export(export: Boolean! = true)
   | INPUT_FIELD_DEFINITION
 ```
 
-{@core__export} can occur at any type system location. Elements with {@core__export} will always be included in the API. Elements with {@core__export}`(export: false)` will always be excluded from the API.
+{@core__export} can occur at any type system location. Elements with {@core__export} or {@core__export}`(export: true)` will always be included in the API. Elements with {@core__export}`(export: false)` will always be excluded from the API. When you define the directive in a schema, you may omit locations from the definition that are not used by instances of the directive in your schema.
 
 ###! export: Boolean! = true
 
@@ -278,16 +281,21 @@ If true, the element is always exported, regardless of whether the feature which
 # Prefixing
 
 With the exception of a single root directive, core feature specifications MUST prefix all schema elements they introduce. The prefix:
-  1. MUST match the default name of the feature as derived from the feature's specification URL,
-  2. MUST be a string of characters valid within GraphQL names, and
-  3. MUST NOT contain the core namespace separator, which is two underscores ({"__"}).
+  1. MUST match the name of the feature as derived from the feature's specification URL,
+  2. MUST be a valid [GraphQL name](https://spec.graphql.org/draft/#Name), and
+  3. MUST NOT contain the core namespace separator, which is two underscores ({"__"}), and
+  4. MUST NOT end with an underscore (which would create ambiguity between whether {"x___y"} is prefix `x_` for element `y` or prefix `x` for element `_y`).
 
-Prefixed names consist of the name of the feature, followed by two underscores, followed by the name of the element (which can be any valid GraphQL identifier). For instance, the `core` specification (which you are currently reading) introduces elements named [{@core}](#@core) [{@core__export}](#@core__export).
+Prefixed names consist of the name of the feature, followed by two underscores, followed by the name of the element, which can be any valid [GraphQL name](https://spec.graphql.org/draft/#Name). For instance, the `core` specification (which you are currently reading) introduces elements named [{@core}](#@core) [{@core__export}](#@core__export).
+
+Note that both parts must be valid GraphQL names, and GraphQL names cannot start with digits, so core feature specifications cannot introduce names like `@feature__24hours`.
 
 A feature's *root directive* is an exception to the prefixing requirements. Feature specifications MAY introduce a single directive which carries only the name of the feature, with no prefix required. For example, the `core` specification introduces a {@core} directive. This directive has the same name as the feature ("`core`"), and so requires no prefix.
 
-```graphql example -- Using the @core directive with a spec's default name
-schema @core(feature: "https://spec.example.com/example/v1.0") {
+```graphql example -- Using the @core directive without changing the prefix
+schema
+ @core(feature: "https://lib.apollo.dev/core/v0.1")
+ @core(feature: "https://spec.example.com/example/v1.0") {
   query: Query
 }
 
@@ -301,10 +309,11 @@ enum example__Data {
   ITEM
 }
 
+directive @core(feature: String!) repeatable on SCHEMA
 directive @example(data: example__Data) on FIELD_DEFINITION
 ```
 
-The prefix MUST NOT be elided within documentation; definitions of schema elements provided within the spec MUST include the default prefix.
+The prefix MUST NOT be elided within documentation; definitions of schema elements provided within the spec MUST include the feature's name as a prefix.
 
 ## Elements which must be prefixed
 
@@ -333,7 +342,7 @@ Digit : "0" | PositiveDigit
 
 PositiveDigit : "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 
-Specs are versioned with a **subset** of a [Semantic Version Number](https://semver.org/spec/v2.0.0.html) containing only the major and minor parts. Thus, specifications SHOULD provide a version of the form {Major}.{Minor}, where both integers >= 0.
+Specs are versioned with a **subset** of a [Semantic Version Number](https://semver.org/spec/v2.0.0.html) containing only the major and minor parts. Thus, specifications SHOULD provide a version of the form `v`{Major}`.`{Minor}, where both integers >= 0.
 
 ```text example -- Valid version tags
 v2.2
@@ -351,23 +360,9 @@ As specified by semver, spec authors SHOULD increment the:
 
 ++}
 
-Patch and pre-release qualifiers are judged to be not particularly meaningful in the context of core features, which are (by definition) interfaces rather than implementations. The patch component of a semver denotes a bug fix which is backwards compatible—that is, a change to the implementation which does not affect the interface. patch-level changes in the version of a spec denote wording clarifications which do not require implementation changes. As such, it is not important to track them for the purposes of version resolution.
+Patch and pre-release qualifiers are judged to be not particularly meaningful in the context of core features, which are (by definition) interfaces rather than implementations. The patch component of a semver denotes a bug fix which is backwards compatible—that is, a change to the implementation which does not affect the interface. Patch-level changes in the version of a spec denote wording clarifications which do not require implementation changes. As such, it is not important to track them for the purposes of version resolution.
 
 As with [semver](https://semver.org/spec/v2.0.0.html), the `0.x` version series is special: there is no expectation of compatibility between versions `0.x` and `0.y`. For example, a processor must not activate implementation `0.4` to satisfy a requested version of `0.2`.
-
-## Ordering
-
-Given {Version}s {a} and {b}, return whether {a} is {LESS_THAN}, {GREATER_THAN}, or {EQUAL} to {b}.
-
-CompareVersions(a, b) :
-  1. If {a}.{Major} < {b}.{Major}, return {LESS_THAN}
-  2. If {a}.{Major} > {b}.{Major}, return {GREATER_THAN}
-  3. If {a}.{Major} == {b}.{Major}:
-    1. If {a}.{Minor} == {b}.{Minor}, return {EQUAL}
-    2. If {a}.{Minor} > {b}.{Minor}, return {GREATER_THAN}
-    3. Otherwise, return {LESS_THAN}
-
-Note: This ordering does *not* guarantee that if A > B then A can satisfy a version requirement of B. For example, `2.0 > 1.9`, but `2.0` cannot [satisfy](#sec-Satisfaction) the requirements of a document which references version `1.9`, since the major version update introduced possibly-breaking changes.
 
 ## Satisfaction
 
@@ -380,7 +375,7 @@ Satisfies(requested, available) :
 
 ## Referencing versions and activating implementations
 
-Schema documents MUST reference a feature version which supports all the schema elements and behaviors required by the document. As a practical matter, authors should generally prefer to reference the [lowest](#sec-Ordering) versions which can [satisfy](#sec-Satisfaction) their requirements, as this imposes the fewest constraints on processors and is thus more likely to be supported. Authors MAY choose a higher version which they believe has sufficient support.
+Schema documents MUST reference a feature version which supports all the schema elements and behaviors required by the document. As a practical matter, authors will generally prefer to reference a version they have reason to believe is supported by the most processors; depending on context, this might be an old stable version with a low major version, or a new less-deprecated version with a large major version.
 
 If a processor chooses to activate support for a feature, the processor MUST activate an implementation which can [satisfy](#sec-Satisfaction) the version required by the document.
 
@@ -423,47 +418,43 @@ This section lays out algorithms for processing core schemas.
 
 Algorithms described in this section may produce *validation failures* if a document does not conform to the requirements core schema document. Validation failures SHOULD halt processing. Some consumers, such as authoring tools, MAY attempt to continue processing in the presence of validation failures, but their behavior in such cases is unspecified.
 
-Algorithms may also produce *warnings* if a document does not conform to requirements. *Warnings* indicate issues with the document which SHOULD be surfaced to users, but which do not necessarily require processing to halt. Consumers SHOULD generally choose to continue processing in the presence of warnings. Some consumers MAY choose to adopt stricter standards, and halt processing on both warnings and failures.
-
 ## Bootstrapping
 
 Determine the name of the core specification within the document.
 
 It is possible to [rename the core feature](#sec-Renaming-core-itself) within a document. This process determines the actual name for the core feature if one is present.
 
-**Fails** the *Has Schema* validation if there are no SchemaDefinitions in the document
-**Warns** *Extra Schema* for extra SchemaDefinitions in the document after the first
-**Fails** the *Has Core Feature* validation if the core feature is not referenced with a {@core} directive within the document.
+- **Fails** the *Has Schema* validation if there are no SchemaDefinitions in the document
+- **Fails** the *Has Core Feature* validation if the `core` feature itself is not referenced with a {@core} directive within the document
+- **Fails** the *Bootstrap Core Feature Listed First* validation if the reference to the `core` feature is not the first {@core} directive on the document's SchemaDefinition
 
 Bootstrap(document) :
-1. Let {schema} be the only SchemaDefinition in {document}
+1. Let {schema} be the only SchemaDefinition in {document}. (Note that legal GraphQL documents [must include at most one SchemaDefinition](http://spec.graphql.org/draft/#sec-Root-Operation-Types).)
   1. ...if no SchemaDefinitions are present in {document}, the ***Has Schema* validation fails**.
-  2. ...if multiple SchemaDefinitions are present in {document}, let {schema} be the first SchemaDefinition in {document}. Issue the ***Extra Schema* warning** for each subsequent SchemaDefinition, and ignore them for all further processing.
 1. For each directive {d} on {schema},
   1. If {d} has a [`feature:`](#@core/feature) argument which [parses as a feature URL](#@core/feature), *and* whose identity is {"https://lib.apollo.dev/core/"} *and* whose version is {"v0.1"}, *and either*:
     - &#8230;{d} has an [`as:`](#@core/as) argument whose value is equal to {d}'s name
     - &#8230;*or* {d} does not have an [`as:`](#@core/as) argument and {d}'s name is `core`
-    - *then* **Return** {d}'s name
+    - *then* if any directive on {schema} listed before {d} has the same name as {d}, the ***Bootstrap Core Feature Listed First* validation fails**; otherwise **Return** {d}'s name
 - If no matching directive was found, the ***Has Core Feature* validation fails**.
 
 ## Feature Collection
 
 Collect a map of ({featureName}: `String`) -> `Directive`, where `Directive` is a {@core} Directive which introduces the feature named {featureName} into the document.
 
-**Fails** the *Name Uniqueness* validation if feature names are not unique within the document.
-**Warns** *Invalid Feature URL* validation for any invalid feature URLs.
+- **Fails** the *Name Uniqueness* validation if feature names are not unique within the document.
+- **Fails** *Invalid Feature URL* validation for any invalid feature URLs.
 
 CollectFeatures(document) :
   - Let {coreName} be the name of the core feature found via {Bootstrap(document)}
   - Let {features} be a map of {featureName}: `String` -> `Directive`, initially empty.
-  - For each directive {d} named `coreName` on the SchemaDefinition within {document},
-    - Let {defaultName} and {version} be the result of parsing {d}'s `feature:` argument according to the [specified rules for feature URLs](#@core/feature)
+  - For each directive {d} named {coreName} on the SchemaDefinition within {document},
+    - Let {specifiedFeatureName} and {version} be the result of parsing {d}'s `feature:` argument according to the [specified rules for feature URLs](#@core/feature)
     - If the `feature:` is not present or fails to parse:
-      - Issue the ***Invalid Feature URL* warning** for {d},
-      - **Continue** to next {d}
-    - Let {name} be the spec's [name](#sec-Prefixing) as specified by the directive's [`as:`](#@core/as) argument or, if the argument is not present, {defaultName}
-    - If {name} exists within {features}, the ***Name Uniqueness* validation fails**.
-    - Insert {name} => {d} into {features}
+      - The ***Invalid Feature URL* validation fails** for {d},
+    - Let {featureName} be the {d}'s [`as:`](#@core/as) argument or, if the argument is not present, {specifiedFeatureName}
+    - If {featureName} exists within {features}, the ***Name Uniqueness* validation fails**.
+    - Insert {featureName} => {d} into {features}
   - **Return** {features}
 
 
