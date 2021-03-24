@@ -11,5 +11,21 @@ type Query {
 
 directive @example on FIELD_DEFINITION
 
-directive @core(feature: String!)
+directive @core(
+  feature: String!,
+  as: String,
+  export: Boolean! = false)
   repeatable on SCHEMA
+
+directive @core__export(export: Boolean! = true)
+  repeatable on
+  | SCALAR
+  | OBJECT
+  | FIELD_DEFINITION
+  | ARGUMENT_DEFINITION
+  | INTERFACE
+  | UNION
+  | ENUM
+  | ENUM_VALUE
+  | INPUT_OBJECT
+  | INPUT_FIELD_DEFINITION

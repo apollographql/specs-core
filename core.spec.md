@@ -39,7 +39,6 @@ A basic core schema:
 **Core schemas** provide a concise mechanism for schema documents to specify the metadata they provide. Metadata is grouped into **features**, which typically define directives and associated types (e.g. scalars and inputs which serve as directive inputs). Additionally, core schemas provide:
   - [**Flexible namespacing rules.**](#sec-Prefixing) It is always possible to represent any GraphQL schema within a core schema document. Additionally, documents can [choose the names](#@core/as) they use for the features they reference, guaranteeing that namespace collisions can always be resolved.
   - [**Versioning.**](#sec-Versioning) Feature specifications follow [semver-like semantic versioning principles](#sec-Versioning), which helps schema processors determine if they are able to correctly interpret a document's metadata.
-  - [**Standard rules for extensibility**](#sec-Extensibility) of directives and their associated input types. These rules allow specs to annotate each others' metadata, effectively providing "directives on directives," which are otherwise impossible within GraphQL schemas
 
 **Core schemas are not a new language.** All core schema documents are valid GraphQL schema documents. However, this specification introduces new requirements, so not all valid GraphQL schemas are valid core schemas.
 
@@ -119,7 +118,8 @@ type SomeType {
 # in the API.
 directive @another on FIELD_DEFINITION
 
-directive @core(feature: String!) repeatable on SCHEMA
+# Definitions for this spec's directives have been elided; the definitions
+# from the section "Directive Definitions" should be inserted here.
 ```
 
 ## Renaming core itself
@@ -138,9 +138,52 @@ type SomeType {
   field: Int @example
 }
 
-directive @coreSchema(feature: String!, as: String)
+directive @coreSchema(feature: String!, as: String, export: Boolean! = false)
   repeatable on SCHEMA
+directive @coreSchema__export(export: Boolean! = true)
+  repeatable on
+  | SCALAR
+  | OBJECT
+  | FIELD_DEFINITION
+  | ARGUMENT_DEFINITION
+  | INTERFACE
+  | UNION
+  | ENUM
+  | ENUM_VALUE
+  | INPUT_OBJECT
+  | INPUT_FIELD_DEFINITION
 directive @example on FIELD_DEFINITION
+```
+
+# Directive Definitions
+
+All core schemas use the [{@core}](#@core) directive to declare their use of the `core` feature itself as well as any other core features they use. Core schemas may use the [{@core__export}](#@core__export) directive to declare that an individual element of the schema should be exported to the schema's API or not.
+
+In order to use these directives in your schema, GraphQL requires you to include their definitions in your schema.
+
+Processors MUST validate that you have defined the directives with the same arguments, locations, and `repeatable` flag as given below. Specifically, the [bootstrapping](#sec-Bootstrapping) algorithm validates that the `@core` directive has a definition matching the definition given below, and that if the `@core__export` directive is defined, that its definition matches the definition given below. This especially includes validating that default arguments are defined as specified. (The bootstrapping algorithm does not require processors to validate other aspects of the directive declaration such as description strings or argument ordering. The main purpose of this validation is to ensure that directive arguments have the type and default values expected by the specification.)
+
+The following declares both directives defined by this specification. Note that most of the examples in this specification do not contain these declarations, but instead contain a reference to this section. You SHOULD define the directives in your core schema by including the following text in your schema document.
+
+```graphql
+directive @core(
+  feature: String!,
+  as: String,
+  export: Boolean! = false)
+  repeatable on SCHEMA
+
+directive @core__export(export: Boolean! = true)
+  repeatable on
+  | SCALAR
+  | OBJECT
+  | FIELD_DEFINITION
+  | ARGUMENT_DEFINITION
+  | INTERFACE
+  | UNION
+  | ENUM
+  | ENUM_VALUE
+  | INPUT_OBJECT
+  | INPUT_FIELD_DEFINITION
 ```
 
 # Directives
@@ -157,9 +200,7 @@ directive @core(
   repeatable on SCHEMA
 ```
 
-Documents MUST include a definition for the {@core} directive. The provided definition must be *compatible* with the definition above, but may:
-- **Omit arguments** if they are never used in the document,
-- **Introduce new arguments.** New arguments MUST be prefixed, e.g. `example__extensionArgument: Bool`. The prefix MUST be the name of a feature in the document.
+Documents MUST include a definition for the {@core} directive which includes all of the arguments defined above with the same types and default values.
 
 ###! feature: String!
 
@@ -170,7 +211,7 @@ Feature URLs contain information about the spec's [prefix](#sec-Prefixing) and [
 Feature URLs serve two main purposes:
   - Directing human readers to documentation about the feature
   - Providing tools with information about the specs in use, along with enough information to select and invoke an implementation
-  
+
 Feature URLs SHOULD be [RFC 3986 URLs](https://tools.ietf.org/html/rfc3986). When viewed, the URL SHOULD provide the specification of the selected version of the feature in some human-readable form; a human reader should be able to click the link and go to the correct version of the docs.
 
 Although they are not prohibited from doing so, it's assumed that processors will not load the content of feature URLs. Published specifications are not required to be machine-readable, and [this spec](.) places no requirements on the structure or syntax of the content to be found there.
@@ -178,7 +219,7 @@ Although they are not prohibited from doing so, it's assumed that processors wil
 There are, however, requirements on the structure of the URL itself:
 
 ```html diagram -- Basic anatomy of a feature URL
-<code class=anatomy>  
+<code class=anatomy>
   <span class=pink style='--depth: 2'>https://spec.example.com/a/b/c/<span>exampleFeature<aside>name</aside></span><aside>identity</aside></span>/<span style='--depth: 2' class=green>v1.0<aside>version</aside></span>
 </code>
 ```
@@ -242,7 +283,8 @@ enum eg__Data {
 # specifications.
 directive @eg(data: eg__Data) on FIELD_DEFINITION
 
-# (...other definitions omitted...)
+# Definitions for this spec's directives have been elided; the definitions
+# from the section "Directive Definitions" should be inserted here.
 ```
 
 ###! export: Boolean! = false
@@ -272,7 +314,7 @@ directive @core__export(export: Boolean! = true)
   | INPUT_FIELD_DEFINITION
 ```
 
-{@core__export} can occur at any type system location. Elements with {@core__export} or {@core__export}`(export: true)` will always be included in the API. Elements with {@core__export}`(export: false)` will always be excluded from the API. When you define the directive in a schema, you may omit locations from the definition that are not used by instances of the directive in your schema.
+{@core__export} can occur at any type system location. Elements with {@core__export} or {@core__export}`(export: true)` will always be included in the API. Elements with {@core__export}`(export: false)` will always be excluded from the API.
 
 ###! export: Boolean! = true
 
@@ -309,8 +351,10 @@ enum example__Data {
   ITEM
 }
 
-directive @core(feature: String!) repeatable on SCHEMA
 directive @example(data: example__Data) on FIELD_DEFINITION
+
+# Definitions for this spec's directives have been elided; the definitions
+# from the section "Directive Definitions" should be inserted here.
 ```
 
 The prefix MUST NOT be elided within documentation; definitions of schema elements provided within the spec MUST include the feature's name as a prefix.
@@ -320,7 +364,7 @@ The prefix MUST NOT be elided within documentation; definitions of schema elemen
 Feature specs MUST prefix the following schema elements:
   - the names of any object types, interfaces, unions, enums, or input object types defined by the feature
   - the names of any fields the spec introduces on *foreign types* defined in a different feature
-  - the names of any arguments the spec introduces on *foreign directives and fields* defined by a different feature
+  - the names of any arguments the spec introduces on *foreign fields* defined by a different feature
   - the names of any directives introduced in the spec, with the exception of the *root directive*, which must have the same name as the feature
 
 :::[example](prefixing.graphql) -- Prefixing
@@ -380,15 +424,6 @@ Schema documents MUST reference a feature version which supports all the schema 
 If a processor chooses to activate support for a feature, the processor MUST activate an implementation which can [satisfy](#sec-Satisfaction) the version required by the document.
 
 
-# Extensibility
-
-Any directives, scalars, enums, input objects, and other schema elements defined by specs MAY be **extensible**. This means that their definitions within a core schema document do not have to exactly match definitions provided by specs. Instead, definitions should match all usages within the document.
-
-Standard extensibility rules:
-- **Directives** may be defined as taking additional arguments, provided those arguments are [prefixed](#sec-Prefixing) with the name of a document feature followed by two underscores ({"__"}). These arguments are interpreted as metadata-on-metadata, and are routed to the declaring spec for interpretation
-- **Enums** defined in features may include values of any name. For extensible enums, the space of **unprefixed** names belongs to the document. The space of **prefixed** names belongs to the spec with that prefix, and may be used to pass data between specs.
-- **Input Objects** may be defined with additional fields, provided those fields are [prefixed](#sec-Prefixing) with the name of a feature followed by two underscores.
-
 # Processing Schemas
 
 ```mermaid diagram
@@ -405,7 +440,7 @@ The general guidance for processor behavior is: don't react to what you don't un
 
 Specifically, processors:
   - SHOULD pass through {@core} directives which reference unknown feature URLs
-  - SHOULD pass through prefixed directives, types, and other schema elements  
+  - SHOULD pass through prefixed directives, types, and other schema elements
   - SHOULD pass through directives which are not [associated with](#AssignFeatures) a {@core} feature
 
 Processors MAY accept configuration which overrides these default behaviors.
@@ -427,15 +462,31 @@ It is possible to [rename the core feature](#sec-Renaming-core-itself) within a 
 - **Fails** the *Has Schema* validation if there are no SchemaDefinitions in the document
 - **Fails** the *Has Core Feature* validation if the `core` feature itself is not referenced with a {@core} directive within the document
 - **Fails** the *Bootstrap Core Feature Listed First* validation if the reference to the `core` feature is not the first {@core} directive on the document's SchemaDefinition
+- **Fails** the *Core Directive Incorrect Definition* validation if the {@core} directive definition does not *match* the directive as defined by this specification.
+- **Fails** the *Core Export Directive Incorrect Definition* validation if the {@core__export} directive is defined but the definition does not *match* the directive as defined by this specification.
+
+For the purposes of this algorithm, a directive's definition in a schema *matches* a definition provided in this specification if:
+- Its arguments have the specified names, types, and default values (or lack thereof)
+- It is defined as `repeatable` if and only if the specification's definition defines it as `repeatable`
+- The set of locations it belongs to is the same set of locations in the specification's definition.
+
+The following aspects may differ between the definition in the schema and the definition in the specification without preventing the definitions from *matching*:
+- The name of the directive (due to [prefixing](#sec-Prefixing))
+- The order of arguments
+- The order of locations
+- The directive's description string
+- Argument description strings
+- Directives applied to argument definitions
 
 Bootstrap(document) :
 1. Let {schema} be the only SchemaDefinition in {document}. (Note that legal GraphQL documents [must include at most one SchemaDefinition](http://spec.graphql.org/draft/#sec-Root-Operation-Types).)
   1. ...if no SchemaDefinitions are present in {document}, the ***Has Schema* validation fails**.
 1. For each directive {d} on {schema},
-  1. If {d} has a [`feature:`](#@core/feature) argument which [parses as a feature URL](#@core/feature), *and* whose identity is {"https://lib.apollo.dev/core/"} *and* whose version is {"v0.1"}, *and either*:
-    - &#8230;{d} has an [`as:`](#@core/as) argument whose value is equal to {d}'s name
-    - &#8230;*or* {d} does not have an [`as:`](#@core/as) argument and {d}'s name is `core`
-    - *then* if any directive on {schema} listed before {d} has the same name as {d}, the ***Bootstrap Core Feature Listed First* validation fails**; otherwise **Return** {d}'s name
+  1. If {d} has a [`feature:`](#@core/feature) argument which [parses as a feature URL](#@core/feature), *and* whose identity is {"https://lib.apollo.dev/core/"} *and* whose version is {"v0.1"}, *and either* {d} has an [`as:`](#@core/as) argument whose value is equal to {d}'s name *or* {d} does not have an [`as:`](#@core/as) argument and {d}'s name is `core`:
+    - If any directive on {schema} listed before {d} has the same name as {d}, the ***Bootstrap Core Feature Listed First* validation fails**.
+    - If the definition of the directive {d} does not *match* the [definition of {@core} in this specification](#@core), the ***Core Directive Incorrect Definition* validation fails**.
+    - If there is a definition for a directive named {d}`__export` and it does not *match* [definition of {@core__export} in this specification](#@core__export), the ***Core Export Directive Incorrect Definition* validation fails**.
+    - Otherwise, **Return** {d}'s name.
 - If no matching directive was found, the ***Has Core Feature* validation fails**.
 
 ## Feature Collection
