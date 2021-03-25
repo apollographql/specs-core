@@ -22,5 +22,4 @@ schema
   query: Query
 }
 
-# Definitions for this spec's directives have been elided; the definitions
-# from the section "Directive Definitions" should be inserted here.
+directive @core(feature: String!, as: String) repeatable on SCHEMA

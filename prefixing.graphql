@@ -54,5 +54,4 @@ directive @B on ENUM_VALUE
 """
 directive @featureA__fieldDirective on FIELD_DEFINITION
 
-# Definitions for this spec's directives have been elided; the definitions
-# from the section "Directive Definitions" should be inserted here.
+directive @core(feature: String!, as: String) repeatable on SCHEMA
