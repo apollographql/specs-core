@@ -96,7 +96,7 @@ Existing schemas likely contain definitions for directives which are not version
 
 ```graphql example -- Unspecified directives are passed through
 schema
-  @core(feature: "https://lib.apollo.dev/core/v0.1")
+  @core(feature: "https://specs.apollo.dev/core/v0.1")
 {
   query: Query
 }
@@ -119,7 +119,7 @@ It is possible to rename the core feature itself with the same [`as:`](#@core/as
 
 ```graphql example -- Renaming {@core} to {@coreSchema}
 schema
-  @coreSchema(feature: "https://lib.apollo.dev/core/v0.1", as: "coreSchema")
+  @coreSchema(feature: "https://specs.apollo.dev/core/v0.1", as: "coreSchema")
   @coreSchema(feature: "https://example.com/example/v1.0")
 {
   query: Query
@@ -221,7 +221,7 @@ When [`as:`](#@core/as) is provided, processors looking for [prefixed schema ele
 
 ```graphql example -- Using {@core}(feature:, as:) to use a feature with a custom name
 schema
-  @core(feature: "https://lib.apollo.dev/core/v0.1")
+  @core(feature: "https://specs.apollo.dev/core/v0.1")
   @core(feature: "https://spec.example.com/example/v1.0", as: "eg")
 {
   query: Query
@@ -265,7 +265,7 @@ A feature's *root directive* is an exception to the prefixing requirements. Feat
 
 ```graphql example -- Using the @core directive without changing the prefix
 schema
- @core(feature: "https://lib.apollo.dev/core/v0.1")
+ @core(feature: "https://specs.apollo.dev/core/v0.1")
  @core(feature: "https://spec.example.com/example/v1.0") {
   query: Query
 }
@@ -407,7 +407,7 @@ Bootstrap(document) :
 1. Let {schema} be the only SchemaDefinition in {document}. (Note that legal GraphQL documents [must include at most one SchemaDefinition](http://spec.graphql.org/draft/#sec-Root-Operation-Types).)
   1. ...if no SchemaDefinitions are present in {document}, the ***Has Schema* validation fails**.
 1. For each directive {d} on {schema},
-  1. If {d} has a [`feature:`](#@core/feature) argument which [parses as a feature URL](#@core/feature), *and* whose identity is {"https://lib.apollo.dev/core/"} *and* whose version is {"v0.1"}, *and either* {d} has an [`as:`](#@core/as) argument whose value is equal to {d}'s name *or* {d} does not have an [`as:`](#@core/as) argument and {d}'s name is `core`:
+  1. If {d} has a [`feature:`](#@core/feature) argument which [parses as a feature URL](#@core/feature), *and* whose identity is {"https://specs.apollo.dev/core/"} *and* whose version is {"v0.1"}, *and either* {d} has an [`as:`](#@core/as) argument whose value is equal to {d}'s name *or* {d} does not have an [`as:`](#@core/as) argument and {d}'s name is `core`:
     - If any directive on {schema} listed before {d} has the same name as {d}, the ***Bootstrap Core Feature Listed First* validation fails**.
     - If the definition of the directive {d} does not *match* the [definition of {@core} in this specification](#@core), the ***Core Directive Incorrect Definition* validation fails**.
     - Otherwise, **Return** {d}'s name.
@@ -481,5 +481,5 @@ IsInAPI(element) :
   - If {assignments}`[`{element}`]` is {null}, **Return** {true}
   - Else, **Return** {false}
 
-Note: Later versions of this specification may add other ways to affect the behavior of this algorithm, but those mechanisms will only be enabled if you reference those hypothetical versions of this spec.
+Note: Later versions of this specification may add other ways to affect the behavior of this algorithm, but those mechanisms will only be enabled if you reference those hypothetical versions of this specification.
 
