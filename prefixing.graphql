@@ -1,5 +1,5 @@
 schema
-  @core(feature: "https://lib.apollo.dev/core/v0.1")
+  @core(feature: "https://specs.apollo.dev/core/v0.1")
   @core(feature: "https://spec.example.com/featureA/v1.0")
   @core(feature: "https://spec.example.com/featureB/v2.0", as: "B") {
   query: Query
@@ -14,12 +14,6 @@ type featureA__SomeType {
   by featureA (namely featureA__SomeType)
   """
   nativeField: Int @featureA__fieldDirective
-
-  """
-  B__foreignField is a field defined by featureB on a type defined
-  by featureA (namely featureA__SomeType)
-  """
-  B__foreignField: Int
 }
 
 """
@@ -30,11 +24,6 @@ input featureA__SomeInput {
   nativeInputField is defined by featureA
   """
   nativeInputField: Int
-
-  """
-  B__field is defined by featureB as a field on featureA__SomeInput
-  """
-  B__field: String
 }
 
 """
@@ -54,5 +43,4 @@ directive @B on ENUM_VALUE
 """
 directive @featureA__fieldDirective on FIELD_DEFINITION
 
-directive @core(feature: String!, as: String, export: Boolean)
-  repeatable on SCHEMA
+directive @core(feature: String!, as: String) repeatable on SCHEMA

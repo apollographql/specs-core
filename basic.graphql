@@ -1,5 +1,5 @@
 schema
-  @core(feature: "https://lib.apollo.dev/core/v0.1")
+  @core(feature: "https://specs.apollo.dev/core/v0.1")
   @core(feature: "https://specs.example.com/example/v1.0")
 {
   query: Query
@@ -11,5 +11,4 @@ type Query {
 
 directive @example on FIELD_DEFINITION
 
-directive @core(feature: String!)
-  repeatable on SCHEMA
+directive @core(feature: String!, as: String) repeatable on SCHEMA
