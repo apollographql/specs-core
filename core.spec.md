@@ -192,7 +192,7 @@ The final two segments of the URL's [path](https://tools.ietf.org/html/rfc3986#s
   <dt>`identity: "https://spec.example.com/a/b/c/exampleFeature"`</dt>
   <dd>A global identifier for the feature. Processors can treat this as an opaque string identifying the feature (but not the version of the feature) for purposes of selecting an appropriate implementation.</dd>
   <dt>`name: "exampleFeature"`</dt>
-  <dd>The feature's name, for purposes of [prefixing](#sec-Prefixing) schema elements it defines or extends.</dd>
+  <dd>The feature's name, for purposes of [prefixing](#sec-Prefixing) schema elements it defines.</dd>
   <dt>`version: "v1.0"`</dt>
   <dd>The tag for the [version](#sec-Versioning) of the feature used to author the document. Processors MUST select an implementation of the feature which can [satisfy](#sec-Satisfaction) the specified version.</dd>
 </dl>
