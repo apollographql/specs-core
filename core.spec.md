@@ -7,9 +7,8 @@
   <tr><td>Status</td><td>Release</td>
   <tr><td>Version</td><td>0.1</td>
 </table>
-<link rel=stylesheet href=/apollo-dark.css>
-<link rel=stylesheet href=/tron.css>
-<script type=module async defer src=/install-nav.js></script>
+<link rel=stylesheet href=/apollo-light.css>
+<script type=module async defer src=/inject-logo.js></script>
 ```
 
 [GraphQL](https://spec.graphql.org/) provides directives as a means of attaching user-defined metadata to a GraphQL document. Directives are highly flexible, and can be used to suggest behavior and define features of a graph which are not otherwise evident in the schema.
@@ -356,7 +355,7 @@ If a processor chooses to activate support for a feature, the processor MUST act
 graph LR
   schema(["📄  Input Schema"]):::file-->proc("🤖 &nbsp;Processor")
   proc-->output(["📄  Output Schema"]):::file
-  classDef file fill:none,color:#eee;
+  classDef file fill:none,color:#22262E;
   style proc fill:none,stroke:fuchsia,color:fuchsia;
 ```
 
