@@ -59,15 +59,16 @@ A formal description is provided by the [IsInAPI](#sec-Is-In-API-) algorithm.
 
 ```mermaid diagram -- Actors who may be interested in the core schemas
 graph TB
-  author("👩🏽‍💻 🤖  &nbsp;Author")-->schema(["☉ Core Schema"])
-  schema-->proc1("🤖 &nbsp;Processor")
-  proc1-->output1(["☉ Core Schema[0]"])
-  output1-->proc2("🤖 &nbsp;Processor")
-  proc2-->output2(["☉ Core Schema[1]"])
-  output2-->etc("...")
-  etc-->final(["☉ Core Schema [final]"])
-  final-->core("🤖 Data Core")
-  schema-->reader("👩🏽‍💻  Reader")
+  classDef bg fill:none,color:#22262E;
+  author("👩🏽‍💻 🤖  &nbsp;Author"):::bg-->schema(["☉ Core Schema"]):::bg
+  schema-->proc1("🤖 &nbsp;Processor"):::bg
+  proc1-->output1(["☉ Core Schema[0]"]):::bg
+  output1-->proc2("🤖 &nbsp;Processor"):::bg
+  proc2-->output2(["☉ Core Schema[1]"]):::bg
+  output2-->etc("..."):::bg
+  etc-->final(["☉ Core Schema [final]"]):::bg
+  final-->core("🤖 Data Core"):::bg
+  schema-->reader("👩🏽‍💻  Reader"):::bg
   output1-->reader
   output2-->reader
   final-->reader
