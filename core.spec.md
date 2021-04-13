@@ -187,10 +187,10 @@ There are, however, requirements on the structure of the URL itself:
 </code>
 ```
 
-The final two segments of the URL's [path](https://tools.ietf.org/html/rfc3986#section-3.3) MUST contain the feature's name and a [version tag](#sec-Versioning). The content of the URL up to and including the prefix—but excluding the version tag and trailing `/`—is the feature's *identity*. For the above example,
+The final two segments of the URL's [path](https://tools.ietf.org/html/rfc3986#section-3.3) MUST contain the feature's name and a [version tag](#sec-Versioning). The content of the URL up to and including the name—but excluding the `/` after the name and the version tag—is the feature's *identity*. Trailing slashes at the end of the URL (ie, after the version tag) should be ignored. For the above example,
 <dl>
   <dt>`identity: "https://spec.example.com/a/b/c/exampleFeature"`</dt>
-  <dd>A global identifier for the feature. Processors can treat this as an opaque string identifying the feature (but not the version of the feature) for purposes of selecting an appropriate implementation.</dd>
+  <dd>A global identifier for the feature. Processors can treat this as an opaque string identifying the feature (but not the version of the feature) for purposes of selecting an appropriate implementation. The identity never has a trailing `/`.</dd>
   <dt>`name: "exampleFeature"`</dt>
   <dd>The feature's name, for purposes of [prefixing](#sec-Prefixing) schema elements it defines.</dd>
   <dt>`version: "v1.0"`</dt>
@@ -205,7 +205,7 @@ When extracting the URL's `name` and `version`, processors MUST ignore any url c
 
 ```html diagram -- Ignoring meaningless parts of a URL
 <code class=anatomy>
-  <span class=pink style='--depth: 2'>https://example.com/<span>exampleSpec<aside>name</aside></span><aside>identity</aside></span>/<span style='--depth: 2' class=green>v1.0<aside>version</aside></span><span class=grey>?key=val&k2=v2#frag<aside>ignored</aside></span>
+  <span class=pink style='--depth: 2'>https://example.com/<span>exampleSpec<aside>name</aside></span><aside>identity</aside></span>/<span style='--depth: 2' class=green>v1.0<aside>version</aside></span><span class=grey>/?key=val&k2=v2#frag<aside>ignored</aside></span>
 </code>
 ```
 
