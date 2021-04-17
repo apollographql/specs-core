@@ -7,8 +7,8 @@
   <tr><td>Status</td><td>Release</td>
   <tr><td>Version</td><td>0.1</td>
 </table>
-<link rel=stylesheet href=/apollo-light.css>
-<script type=module async defer src=/inject-logo.js></script>
+<link rel=stylesheet href=https://specs.apollo.dev/apollo-light.css>
+<script type=module async defer src=https://specs.apollo.dev/inject-logo.js></script>
 ```
 
 [GraphQL](https://spec.graphql.org/) provides directives as a means of attaching user-defined metadata to a GraphQL document. Directives are highly flexible, and can be used to suggest behavior and define features of a graph which are not otherwise evident in the schema.
