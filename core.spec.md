@@ -24,12 +24,23 @@ The second is unfortunate: GraphQL schemas are generally intended to be self-des
 
 Introducing **core schemas**.
 
-<div class=hbox>
-  <a class=core>
-    <div class=ring></div>
-    <div class=nucleus>core schema</div>
-  </a>
-</div>
+```html diagram
+<style>
+  .core-label {
+    font-size: 12px;
+    font-family: var(--body-font-family);
+    fill: var(--body-background-color);
+    text-align: center;
+    font-variant: small-caps;
+    font-weight: bold;
+  }
+</style>
+<svg viewBox='0 0 100 100' style='height: 10em; width: 100%;' preserveAspectRatio='xMidYMid meet'>
+  <circle cx=50 cy=50 r=50 fill=var(--body-text-color) />
+  <circle cx=50 cy=50 r=43 stroke-width=3 stroke=var(--body-background-color) fill=none />
+  <text class=core-label x=50 y=55 text-anchor=middle>core schema</text>
+</svg>
+```
 
 A basic core schema:
 
