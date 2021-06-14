@@ -4,11 +4,11 @@
 
 ```raw html
 <table class=spec-data>
-  <tr><td>Status</td><td>Release</td>
-  <tr><td>Version</td><td>0.1</td>
+  <tr><td>Status</td><td>Draft</td>
+  <tr><td>Version</td><td>0.2</td>
 </table>
-<link rel=stylesheet href=https://specs.apollo.dev/apollo-light.css>
-<script type=module async defer src=https://specs.apollo.dev/inject-logo.js></script>
+<link rel=stylesheet href=/apollo-light.css>
+<script type=module async defer src=/inject-logo.js></script>
 ```
 
 [GraphQL](https://spec.graphql.org/) provides directives as a means of attaching user-defined metadata to a GraphQL document. Directives are highly flexible, and can be used to suggest behavior and define features of a graph which are not otherwise evident in the schema.
@@ -159,7 +159,8 @@ Declare a core feature present in this schema.
 ```graphql definition
 directive @core(
   feature: String!,
-  as: String)
+  as: String,
+  for: [core__Purpose!])
   repeatable on SCHEMA
 ```
 
@@ -248,6 +249,36 @@ directive @eg(data: eg__Data) on FIELD_DEFINITION
 
 directive @core(feature: String!, as: String) repeatable on SCHEMA
 ```
+
+###! for: [core__Purpose!]
+
+An optional list of [purposes](#core__Purpose) for this feature. This provides a hint to processors and data cores as to whether they can safely ignore a given feature.
+
+By default, core features SHOULD fail open. This means that an unknown feature SHOULD NOT prevent a schema from being served or processed. Instead, consumers SHOULD ignore unknown features and serve or process the rest of the schema normally.
+
+This behavior is different for features with a specified purpose. Currently, the only specified purpose is [`security`](#core__Purpose/security). Thus, the acceptable values for this argument are `for: [security]` or {null}. Data cores MUST NOT attempt to serve a schema unless they support **all** features which are referenced `for` [`security`](#core__Purpose/security).
+
+Note technically it is valid to repeat values within an enum list, so `[security, security]`, `[security, security, security]` and so on are valid argument values. This is not an error, and SHOULD be treated as equivalent to just `[security]`. However, core schema authors SHOULD avoid doing this, as it does nothing but add noise to the document.
+
+# Enums
+
+##! core__Purpose
+
+```graphql definition
+enum core__Purpose {
+  security
+}
+```
+
+The role of a feature referenced with {@core}.
+
+This is not intended to be an exhaustive list of all the purposes a core feature might serve. Rather, it is intended to capture cases where the default fail-open behavior of core schema consumers is undesirable.
+
+###! security
+
+Core features which are referenced [`for:`](#@core/for) `security` provide metadata necessary to securely serve the schema. For instance, an {@auth} feature may flag fields which require authorization. If a data core does not support the {@auth} feature and serves the schema anyway, these fields will be accessible without authorization, compromising security.
+
+Consumers MUST NOT serve a schema if it contains *any* unsupported features referenced [`for:`](#@core/for) `security`.
 
 # Prefixing
 
