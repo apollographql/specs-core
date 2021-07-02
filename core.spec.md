@@ -24,13 +24,6 @@ The second is unfortunate: GraphQL schemas are generally intended to be self-des
 
 Introducing **core schemas**.
 
-<div class=hbox>
-  <a class=core>
-    <div class=ring></div>
-    <div class=nucleus>core schema</div>
-  </a>
-</div>
-
 A basic core schema:
 
 :::[example](basic.graphql) -- A basic core schema
