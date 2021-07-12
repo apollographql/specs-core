@@ -5,7 +5,8 @@
   "repository": "https://github.com/apollo-specs/core",
   "main": "index.js",
   "scripts": {
-    "build": "rsync -avz --exclude .dist . .dist && spec-md core.spec.md > .dist/index.html"
+    "build": "rsync -avz --exclude .dist . .dist && spec-md core.spec.md > .dist/index.html",
+    "dev": "npm run build && chokidar '**/*' -i '.dist' -c 'npm run build'"
   },
   "keywords": [],
   "author": "",
