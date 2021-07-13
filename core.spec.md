@@ -303,7 +303,7 @@ Consumers MUST NOT serve a field if:
   - the field's return type definition has **any** unsupported EXECUTION directives, or
   - the field definition has **any** unsupported EXECUTION directives
 
-Such fields are *unresolvable*. Consumers MAY attempt to serve schemas with unresolvable fields. Depending on the needs of the consumer, unresolvable fields MAY be removed from the schema prior to serving, or they MAY produce runtime errors if a query attempts to resolve them.
+Such fields are *unresolvable*. Consumers MAY attempt to serve schemas with unresolvable fields. Depending on the needs of the consumer, unresolvable fields MAY be removed from the schema prior to serving, or they MAY produce runtime errors if a query attempts to resolve them. Consumers MAY implement stricter policies, wholly refusing to serve schemas with unresolvable fields, or even refusing to serve schemas with any unsupported EXECUTION features, even if those features are never used in the schema. 
 
 # Prefixing
 
@@ -538,4 +538,29 @@ IsInAPI(element) :
   - Else, **Return** {false}
 
 Note: Later versions of this specification may add other ways to affect the behavior of this algorithm, but those mechanisms will only be enabled if you reference those hypothetical versions of this specification.
+
+## Is Affected By Feature?
+
+Determine if a schema element is *affected* by a given feature.
+
+IsAffected(element, feature):
+  - Let {assignments} be the result of assigning features to elements via {AssignFeatures(document)}
+  - For each directive {d} on {element}, If {assignments}`[`{d}`]` is {feature}, **Return** {true}  
+  - If {element} is a FieldDefinition,
+    - Let {parent} be the parent ObjectDefinition or InterfaceDefinition for {element}
+    - If {IsAffected(parent, feature)}, **Return** {true}
+    - For each argument type {a} declared on {element},
+      - Let {t} be the InputDefinition, EnumDefinition, or ScalarDefinition for argument {a}
+      - If {IsAffected(t, feature)}, **Return** {true}
+    - Let {return} be the ObjectDefinition, InterfaceDefinition, or UnionDefinition for {element}'s return type
+    - If {IsAffected(return, feature)}, **Return** {true}
+  - If {element} is an InputDefinition,
+    - For each InputFieldDefinition {field} within {element},
+      - Let {t} be the InputDefinition, EnumDefinition, or ScalarDefinition for the type of {field}
+      - If {IsAffected(t, feature)}, **Return** {true}
+  - If {element} is an EnumDefinition,
+    - For each EnumValueDefinition {value} in {element},
+      - If {IsAffected(value, feature)}, **Return** {true}
+    
+
 
