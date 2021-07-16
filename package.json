@@ -1,5 +1,6 @@
 {
-  "name": "@apollo/core",
+  "name": "specs-site",
+  "private": true,
   "version": "1.0.0",
   "description": "for GraphQL schemas with extensible metadata",
   "repository": "https://github.com/apollo-specs/core",
