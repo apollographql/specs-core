@@ -171,7 +171,7 @@ Declare a core feature present in this schema.
 directive @core(
   feature: String!,
   as: String,
-  for: [core__Purpose!])
+  for: core__Purpose)
   repeatable on SCHEMA
 ```
 
@@ -261,15 +261,15 @@ directive @eg(data: eg__Data) on FIELD_DEFINITION
 directive @core(feature: String!, as: String) repeatable on SCHEMA
 ```
 
-###! for: [core__Purpose!]
+###! for: core__Purpose
 
-An optional list of [purposes](#core__Purpose) for this feature. This provides a hint to processors and data cores as to whether they can safely ignore a given feature.
+An optional [purpose](#core__Purpose) for this feature. This hints to consumers as to whether they can safely ignore metadata from a given feature.
 
-By default, core features SHOULD fail open. This means that an unknown feature SHOULD NOT prevent a schema from being served or processed. Instead, consumers SHOULD ignore unknown features and serve or process the rest of the schema normally.
+By default, core features SHOULD fail open. This means that an unknown feature SHOULD NOT prevent a schema from being served or processed. Instead, consumers SHOULD ignore unknown feature metadata and serve or process the rest of the schema normally.
 
-This behavior is different for features with a specified purpose. Currently, the only specified purpose is [`security`](#core__Purpose/security). Thus, the acceptable values for this argument are `for: [security]` or {null}. Data cores MUST NOT attempt to serve a schema unless they support **all** features which are referenced `for` [`security`](#core__Purpose/security).
-
-Note technically it is valid to repeat values within an enum list, so `[security, security]`, `[security, security, security]` and so on are valid argument values. This is not an error, and SHOULD be treated as equivalent to just `[security]`. However, core schema authors SHOULD avoid doing this, as it does nothing but add noise to the document.
+This behavior is different for features with a specified purpose:
+  - [`SECURITY`](#core__Purpose/SECURITY) features convey metadata necessary to securely resolve fields within the schema
+  - [`EXECUTION`](#core__Purpose/EXECUTION) features convey metadata necessary to correctly resolve fields within the schema
 
 # Enums
 
@@ -277,19 +277,44 @@ Note technically it is valid to repeat values within an enum list, so `[security
 
 ```graphql definition
 enum core__Purpose {
-  security
+  SECURITY
+  EXECUTION
 }
 ```
 
 The role of a feature referenced with {@core}.
 
-This is not intended to be an exhaustive list of all the purposes a core feature might serve. Rather, it is intended to capture cases where the default fail-open behavior of core schema consumers is undesirable.
+This is not intended to be an exhaustive list of all the purposes a feature might serve. Rather, it is intended to capture cases where the default fail-open behavior of core schema consumers is undesirable.
 
-###! security
+Note we'll refer to directives from features which are `for: SECURITY` or `for: EXECUTION` as "`SECURITY` directives" and "`EXECUTION` directives", respectively.
 
-Core features which are referenced [`for:`](#@core/for) `security` provide metadata necessary to securely serve the schema. For instance, an {@auth} feature may flag fields which require authorization. If a data core does not support the {@auth} feature and serves the schema anyway, these fields will be accessible without authorization, compromising security.
+###! SECURITY
 
-Consumers MUST NOT serve a schema if it contains *any* unsupported features referenced [`for:`](#@core/for) `security`.
+`SECURITY` features provide metadata necessary to securely resolve fields. For instance, a hypothetical {auth} feature may provide an {@auth} directive to flag fields which require authorization. If a data core does not support the {auth} feature and serves those fields anyway, these fields will be accessible without authorization, compromising security.
+
+Security-conscious consumers MUST NOT serve a field if:
+  - the schema definition has **any** unsupported SECURITY directives,   
+  - the field's parent type definition has **any** unsupported SECURITY directives,
+  - the field's return type definition has **any** unsupported SECURITY directives, or
+  - the field definition has **any** unsupported SECURITY directives
+
+Such fields are *not securely resolvable*. Security-conscious consumers MAY serve schemas with fields which are not securely resolvable. However, they MUST remove such fields from the schema before serving it.
+
+Less security-conscious consumers MAY choose to relax these requirements. For instance, servers may provide a development mode in which unknown SECURITY directives are ignored, perhaps with a warning. Such software may also provide a way to explicitly disable some or all SECURITY features during development.
+
+More security-conscious consumers MAY choose to enhance these requirements. For instance, production servers MAY adopt a policy of entirely rejecting any schema which contains ANY unsupported SECURITY features, even if those features are never used to annotate the schema.
+
+###! EXECUTION
+
+`EXECUTION` features provide metadata necessary to correctly resolve fields. For instance, a hypothetical {ts} feature may provide a `@ts__resolvers` annotation which references a TypeScript module of field resolvers. A consumer which does not support the {ts} feature will be unable to correctly resolve such fields.
+
+Consumers MUST NOT serve a field if:
+  - the schema's definition has **any** unsupported EXECUTION directives,
+  - the field's parent type definition has **any** unsupported EXECUTION directives,
+  - the field's return type definition has **any** unsupported EXECUTION directives, or
+  - the field definition has **any** unsupported EXECUTION directives
+
+Such fields are *unresolvable*. Consumers MAY attempt to serve schemas with unresolvable fields. Depending on the needs of the consumer, unresolvable fields MAY be removed from the schema prior to serving, or they MAY produce runtime errors if a query attempts to resolve them. Consumers MAY implement stricter policies, wholly refusing to serve schemas with unresolvable fields, or even refusing to serve schemas with any unsupported EXECUTION features, even if those features are never used in the schema. 
 
 # Prefixing
 
@@ -524,4 +549,29 @@ IsInAPI(element) :
   - Else, **Return** {false}
 
 Note: Later versions of this specification may add other ways to affect the behavior of this algorithm, but those mechanisms will only be enabled if you reference those hypothetical versions of this specification.
+
+## Is Affected By Feature?
+
+Determine if a schema element is *affected* by a given feature.
+
+IsAffected(element, feature):
+  - Let {assignments} be the result of assigning features to elements via {AssignFeatures(document)}
+  - For each directive {d} on {element}, If {assignments}`[`{d}`]` is {feature}, **Return** {true}  
+  - If {element} is a FieldDefinition,
+    - Let {parent} be the parent ObjectDefinition or InterfaceDefinition for {element}
+    - If {IsAffected(parent, feature)}, **Return** {true}
+    - For each argument type {a} declared on {element},
+      - Let {t} be the InputDefinition, EnumDefinition, or ScalarDefinition for argument {a}
+      - If {IsAffected(t, feature)}, **Return** {true}
+    - Let {return} be the ObjectDefinition, InterfaceDefinition, or UnionDefinition for {element}'s return type
+    - If {IsAffected(return, feature)}, **Return** {true}
+  - If {element} is an InputDefinition,
+    - For each InputFieldDefinition {field} within {element},
+      - Let {t} be the InputDefinition, EnumDefinition, or ScalarDefinition for the type of {field}
+      - If {IsAffected(t, feature)}, **Return** {true}
+  - If {element} is an EnumDefinition,
+    - For each EnumValueDefinition {value} in {element},
+      - If {IsAffected(value, feature)}, **Return** {true}
+    
+
 
